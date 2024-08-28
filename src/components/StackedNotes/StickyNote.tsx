@@ -14,7 +14,7 @@ type Props = {
 
 export function StickyNote({ index, title, children }: Props) {
   const offset = useMemo(() => calcOffset(index), [index])
-  const { stacked } = useStackedStore()
+  const { stacked, scrollTo } = useStackedStore()
   const willBeObscured = stacked > index + 0.8
   const withShadow = stacked > 0 && index <= stacked + 1
 
@@ -42,7 +42,8 @@ export function StickyNote({ index, title, children }: Props) {
 
       {willBeObscured && (
         <div
-          className='absolute bottom-0 left-0 top-0 mt-10 w-[40px] overflow-hidden text-lg font-medium leading-[40px] tracking-wide'
+          onClick={() => scrollTo(index)}
+          className='absolute bottom-0 left-0 top-0 mt-10 w-[40px] cursor-pointer overflow-hidden text-lg font-medium leading-[40px] tracking-wide'
           style={{ writingMode: 'vertical-lr' }}
         >
           {title}

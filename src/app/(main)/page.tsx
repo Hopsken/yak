@@ -20,6 +20,10 @@ const Notes = [
   {
     title: '你的名字',
     children: 'Loream Ipusm'
+  },
+  {
+    title: '你的名字xxx',
+    children: 'Loream Ipusm'
   }
 ]
 

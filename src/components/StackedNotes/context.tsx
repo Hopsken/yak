@@ -5,12 +5,18 @@ import { createStore, useStore } from 'zustand'
 interface Store {
   scroll: number
   stacked: number
+  scrollTo: (index: number) => void
+  setScrollTo: (fn: (index: number) => void) => void
   setStackedByScroll: (offset: number) => void
 }
 
 const store = createStore<Store>(set => ({
   scroll: 0,
   stacked: 0,
+  scrollTo: () => void 0,
+  setScrollTo: fn => {
+    set(prev => ({ ...prev, scrollTo: fn }))
+  },
   setStackedByScroll: scroll => {
     set(prev => ({
       ...prev,
@@ -29,6 +35,11 @@ export function StackedProvider({ children }: PropsWithChildren<{}>) {
 export const useSetStackedByScroll = () => {
   const store = useContext(StoreContext)
   return useStore(store, s => s.setStackedByScroll)
+}
+
+export const useSetScrollTo = () => {
+  const store = useContext(StoreContext)
+  return useStore(store, s => s.setScrollTo)
 }
 
 export const useStackedStore = () => {
