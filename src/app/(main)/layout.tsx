@@ -3,9 +3,10 @@ import { ReactNode } from 'react'
 
 export default function NoteLayout(props: { children: ReactNode }) {
   return (
-    <div className='flex flex-col h-screen'>
+    <div className='flex h-screen flex-col'>
       <Header />
-      <main>{props.children}</main>
+
+      {props.children}
     </div>
   )
 }

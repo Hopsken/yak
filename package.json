@@ -13,17 +13,26 @@
     "@keystatic/next": "^5.0.1",
     "@markdoc/markdoc": "^0.4.0",
     "@tailwindcss/typography": "^0.5.14",
+    "clsx": "^2.1.1",
+    "lodash.debounce": "^4.0.8",
+    "lodash.throttle": "^4.1.1",
     "next": "14.2.7",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/lodash.throttle": "^4.1.9",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.6",
+    "eslint-config-prettier": "^9.1.0",
     "postcss": "^8",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
