@@ -13,7 +13,7 @@ export default async function Page() {
     <ul>
       {posts.map(post => (
         <li key={post.slug}>
-          <Link href={`/posts/${post.slug}`}>{post.entry.title}</Link>
+          <Link href={`/notes/${post.slug}`}>{post.entry.title}</Link>
         </li>
       ))}
     </ul>
