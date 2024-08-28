@@ -1,0 +1,27 @@
+{
+  "name": "yak",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.2.6"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.6"
+  },
+  "packageManager": "pnpm@8.6.3+sha512.d18e277ae8072091046bccbca0931f77dc3080791cd6122ae890bf504125d8af76b37fb33da287dba9fbbb6da6ebb13e314e9fa4a464c7effe3d8599cebe7243"
+}
