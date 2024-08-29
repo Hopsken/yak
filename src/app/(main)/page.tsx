@@ -14,12 +14,8 @@ export default async function Home() {
   }
 
   return (
-    <NoteStoreProvider>
-      <NotesContainer>
-        <StickyNote title={homeEntry.title} index={0}>
-          <MarkNote entry={homeEntry} />
-        </StickyNote>
-      </NotesContainer>
-    </NoteStoreProvider>
+    <StickyNote title={homeEntry.title} index={0}>
+      <MarkNote entry={homeEntry} />
+    </StickyNote>
   )
 }

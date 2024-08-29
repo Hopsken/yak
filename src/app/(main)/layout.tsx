@@ -1,12 +1,22 @@
 import { Header } from '@/components/Header'
-import { ReactNode } from 'react'
+import React, { ReactNode } from 'react'
+import { NotesContainer } from './_components/NotesContainer'
+import { NoteStoreProvider } from './_store'
 
-export default function NoteLayout(props: { children: ReactNode }) {
+export default function NoteLayout(props: {
+  children: ReactNode
+  panes: React.ReactNode
+}) {
+  console.log('panes:', props.panes)
   return (
     <div className='flex h-screen flex-col'>
       <Header />
-
-      {props.children}
+      <NoteStoreProvider>
+        <NotesContainer>
+          {props.children}
+          {props.panes}
+        </NotesContainer>
+      </NoteStoreProvider>
     </div>
   )
 }
