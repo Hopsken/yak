@@ -6,11 +6,15 @@ import { createStore, useStore } from 'zustand'
 
 type NotesStore = {
   notes: NoteEntry[]
+  appendNote: (entry: NoteEntry) => void
 }
 
 function createNotesStore(first?: NoteEntry) {
   return createStore<NotesStore>(set => ({
-    notes: first ? [first] : []
+    notes: first ? [first] : [],
+    appendNote: entry => {
+      set(prev => ({ ...prev, notes: [...prev.notes, entry] }))
+    }
   }))
 }
 
