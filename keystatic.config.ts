@@ -15,16 +15,10 @@ export default config({
         title: fields.slug({
           name: { label: 'Title', validation: { isRequired: true } }
         }),
-        description: fields.text({
-          label: 'Description',
-          validation: { isRequired: false }
-        }),
         pubDate: fields.date({
           label: 'Publish date',
           defaultValue: { kind: 'today' },
-          validation: {
-            isRequired: true
-          }
+          validation: { isRequired: true }
         }),
         updatedDate: fields.date({
           label: 'Updated date',
