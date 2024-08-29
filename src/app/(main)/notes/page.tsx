@@ -8,7 +8,7 @@ const reader = createReader(process.cwd(), keystaticConfig)
 
 export default async function Page() {
   // 2. Read the "Posts" collection
-  const posts = await reader.collections.posts.all()
+  const posts = await reader.collections.notes.all()
   return (
     <ul>
       {posts.map(post => (

@@ -1,40 +1,25 @@
-import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
+import { reader } from '@/lib/keystatic/reader'
+import { NoteStoreProvider } from './_store'
+import { NotesContainer } from './_components/NotesContainer'
+import { MarkNote } from './_components/MarkNote'
+import { StickyNote } from '@/components/StackedNotes'
 
-const Notes = [
-  {
-    title: 'Helle World',
-    children: 'Loream Ipusm'
-  },
-  {
-    title: 'JavaScript',
-    children: 'Loream Ipusm'
-  },
-  {
-    title: 'React',
-    children: 'Loream Ipusm'
-  },
-  {
-    title: '飞去南方',
-    children: 'Loream Ipusm'
-  },
-  {
-    title: '你的名字',
-    children: 'Loream Ipusm'
-  },
-  {
-    title: '你的名字xxx',
-    children: 'Loream Ipusm'
+export default async function Home() {
+  const homeEntry = await reader.collections.notes.read('home', {
+    resolveLinkedFiles: true
+  })
+
+  if (!homeEntry) {
+    throw new Error('404')
   }
-]
 
-export default function Home() {
   return (
-    <ScrollContainer panes={Notes.length}>
-      {Notes.map((note, index) => (
-        <StickyNote key={note.title} title={note.title} index={index}>
-          {note.children}
+    <NoteStoreProvider>
+      <NotesContainer>
+        <StickyNote title={homeEntry.title} index={0}>
+          <MarkNote entry={homeEntry} />
         </StickyNote>
-      ))}
-    </ScrollContainer>
+      </NotesContainer>
+    </NoteStoreProvider>
   )
 }

@@ -34,10 +34,7 @@ export function StickyNote({ index, title, children }: Props) {
           }
         )}
       >
-        <Prose>
-          <h1>{title}</h1>
-          {children}
-        </Prose>
+        <Prose title={title}>{children}</Prose>
       </div>
 
       {willBeObscured && (
