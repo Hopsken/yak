@@ -1,23 +1,32 @@
-import { reader } from '@/lib/keystatic/reader'
+import { getNoteBySlug } from '@/lib/keystatic/reader'
 import { MarkNote } from '../../_components/MarkNote'
 import { StickyNote } from '@/components/StackedNotes'
 
 export default async function NotePage({
-  params
+  params,
+  searchParams
 }: {
   params: { slug: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }) {
-  const entry = await reader.collections.notes.read(params.slug, {
-    resolveLinkedFiles: true
-  })
+  const entries = await Promise.all(
+    [params.slug]
+      .concat(searchParams.note || [])
+      .map(slug => getNoteBySlug(slug))
+  )
 
-  if (!entry) {
+  const [root] = entries
+
+  if (!root || !entries.length) {
     throw new Error('404')
   }
 
-  return (
-    <StickyNote title={entry.title} index={0}>
-      <MarkNote entry={entry} />
-    </StickyNote>
+  return entries.map(
+    (entry, index) =>
+      entry && (
+        <StickyNote key={entry.title} title={entry.title} index={index}>
+          <MarkNote entry={entry} />
+        </StickyNote>
+      )
   )
 }

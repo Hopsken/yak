@@ -1,31 +1,26 @@
 'use client'
 
 import Link from 'next/link'
-import { PropsWithChildren, useCallback } from 'react'
-import { useNotesStore } from '../_store'
-import { useStore } from 'zustand'
+import { PropsWithChildren, useMemo } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 type Props = PropsWithChildren<{
   href: string
 }>
 
 export function HyperLink({ href, children }: Props) {
-  const store = useNotesStore()
-  const appendNote = useStore(store, s => s.appendNote)
-  const onClick = useCallback(() => {
-    appendNote({
-      title: 'Test',
-      description: 'test',
-      pubDate: new Date().toISOString(),
-      updatedDate: null,
-      draft: false,
-      content: {
-        node: null
-      }
-    })
-  }, [appendNote])
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const inlineLink = useMemo(() => {
+    if (href.startsWith('/notes')) {
+      const params = new URLSearchParams(searchParams)
+      params.append('note', href.split('/')[2])
+      return pathname + '?' + params.toString()
+    }
+    return href
+  }, [href, pathname, searchParams])
   return (
-    <Link href={href} scroll={false} onClick={onClick}>
+    <Link href={inlineLink} scroll={false}>
       {children}
     </Link>
   )
