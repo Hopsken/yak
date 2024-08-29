@@ -1,12 +1,10 @@
-import { reader } from '@/lib/keystatic/reader'
+import { getNoteBySlug } from '@/lib/keystatic/reader'
 import { MarkNote } from './_components/MarkNote'
 import { StickyNote } from '@/components/StackedNotes'
 import { StackedNotes } from './_components/StackedNotes'
 
 export default async function Home() {
-  const homeEntry = await reader.collections.notes.read('home', {
-    resolveLinkedFiles: true
-  })
+  const homeEntry = await getNoteBySlug('home')
 
   if (!homeEntry) {
     throw new Error('404')
