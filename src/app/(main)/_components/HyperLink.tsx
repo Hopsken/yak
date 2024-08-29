@@ -1,26 +1,67 @@
 'use client'
 
 import Link from 'next/link'
-import { PropsWithChildren, useMemo } from 'react'
+import React, { PropsWithChildren, useCallback, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useScrollTo } from '@/components/StackedNotes/context'
 
 type Props = PropsWithChildren<{
+  root: string
   href: string
+  from: string
 }>
 
-export function HyperLink({ href, children }: Props) {
+export function HyperLink({ root, from, href, children }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const inlineLink = useMemo(() => {
+  const router = useRouter()
+  const scrollTo = useScrollTo()
+
+  const isNoteLink = useMemo(() => href.startsWith('/notes'), [href])
+
+  const target = useMemo(() => {
     if (href.startsWith('/notes')) {
-      const params = new URLSearchParams(searchParams)
-      params.append('note', href.split('/')[2])
-      return pathname + '?' + params.toString()
+      const target = href.split('/')[2]
+      return target
     }
-    return href
-  }, [href, pathname, searchParams])
+    return null
+  }, [href])
+
+  const notes = useMemo(
+    () => [root].concat(searchParams.getAll('note')),
+    [root, searchParams]
+  )
+
+  const onClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!target || !isNoteLink) return
+
+      e.preventDefault()
+
+      if (notes.includes(target)) {
+        scrollTo(notes.indexOf(target))
+        return
+      }
+
+      const params = new URLSearchParams(searchParams)
+      // reset all
+      params.delete('note')
+
+      // if from root, direct append to params
+      const fromIndex = notes.indexOf(from)
+      for (let i = 1; i <= fromIndex; i++) {
+        params.append('note', notes[i])
+      }
+      params.append('note', target)
+
+      router.push(pathname + '?' + params.toString())
+      return
+    },
+    [from, isNoteLink, notes, pathname, router, scrollTo, searchParams, target]
+  )
+
   return (
-    <Link href={inlineLink} scroll={false}>
+    <Link href={href} scroll={false} onClick={onClick}>
       {children}
     </Link>
   )

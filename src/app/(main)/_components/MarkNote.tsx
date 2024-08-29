@@ -3,7 +3,15 @@ import React, { ReactNode } from 'react'
 import { NoteEntry } from '@/type'
 import { HyperLink } from './HyperLink'
 
-export function MarkNote({ entry }: { entry: NoteEntry }) {
+export function MarkNote({
+  root,
+  slug,
+  entry
+}: {
+  root: string
+  slug: string
+  entry: NoteEntry
+}) {
   const { node } = entry.content
   const errors = Markdoc.validate(node)
 
@@ -23,7 +31,11 @@ export function MarkNote({ entry }: { entry: NoteEntry }) {
       {Markdoc.renderers.react(renderable, React, {
         components: {
           Link: ({ href, children }: { href: string; children: ReactNode }) => {
-            return <HyperLink href={href}>{children}</HyperLink>
+            return (
+              <HyperLink root={root} from={slug} href={href}>
+                {children}
+              </HyperLink>
+            )
           }
         }
       })}

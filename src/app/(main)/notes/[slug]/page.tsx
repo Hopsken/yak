@@ -1,6 +1,6 @@
 import { getNoteBySlug } from '@/lib/keystatic/reader'
 import { MarkNote } from '../../_components/MarkNote'
-import { StickyNote } from '@/components/StackedNotes'
+import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 
 export default async function NotePage({
   params,
@@ -10,9 +10,14 @@ export default async function NotePage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   const entries = await Promise.all(
-    [params.slug]
-      .concat(searchParams.note || [])
-      .map(slug => getNoteBySlug(slug))
+    [params.slug].concat(searchParams.note || []).map(async slug => {
+      const entry = await getNoteBySlug(slug)
+      if (!entry) return null
+      return {
+        slug,
+        ...entry
+      }
+    })
   )
 
   const [root] = entries
@@ -21,12 +26,16 @@ export default async function NotePage({
     throw new Error('404')
   }
 
-  return entries.map(
-    (entry, index) =>
-      entry && (
-        <StickyNote key={entry.title} title={entry.title} index={index}>
-          <MarkNote entry={entry} />
-        </StickyNote>
-      )
+  return (
+    <ScrollContainer panes={entries.length}>
+      {entries.map(
+        (entry, index) =>
+          entry && (
+            <StickyNote key={entry.title} title={entry.title} index={index}>
+              <MarkNote root={root.slug} slug={entry.slug} entry={entry} />
+            </StickyNote>
+          )
+      )}
+    </ScrollContainer>
   )
 }

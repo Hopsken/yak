@@ -42,6 +42,11 @@ export const useSetScrollTo = () => {
   return useStore(store, s => s.setScrollTo)
 }
 
+export const useScrollTo = () => {
+  const store = useContext(StoreContext)
+  return useStore(store, s => s.scrollTo)
+}
+
 export const useStackedStore = () => {
   const store = useContext(StoreContext)
   return useStore(store)
