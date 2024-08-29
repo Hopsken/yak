@@ -9,7 +9,7 @@ type Props = PropsWithChildren<{
 
 export function HyperLink({ href, children }: Props) {
   return (
-    <Link href={href} onClick={() => console.log(href)}>
+    <Link href={href} scroll={false} onClick={() => console.log(href)}>
       {children}
     </Link>
   )

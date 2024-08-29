@@ -5,7 +5,7 @@ export default function PlayPage() {
     <div>
       Hey hey hey, this is play.
       <p>
-        <Link href={'/notes/playground'}>Go!</Link>
+        <Link href={'/notes/ hello-world'}>Go!</Link>
       </p>
     </div>
   )
