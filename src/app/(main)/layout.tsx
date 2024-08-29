@@ -7,7 +7,6 @@ export default function NoteLayout(props: {
   children: ReactNode
   panes: React.ReactNode
 }) {
-  console.log('panes:', props.panes)
   return (
     <div className='flex h-screen flex-col'>
       <Header />

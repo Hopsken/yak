@@ -1,7 +1,5 @@
 import React from 'react'
-import Markdoc from '@markdoc/markdoc'
 import { reader } from '@/lib/keystatic/reader'
-import { Prose } from '@/components/Prose'
 import { StickyNote } from '@/components/StackedNotes'
 import { MarkNote } from '@/app/(main)/_components/MarkNote'
 

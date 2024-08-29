@@ -1,6 +1,4 @@
 import { reader } from '@/lib/keystatic/reader'
-import { NoteStoreProvider } from './_store'
-import { NotesContainer } from './_components/NotesContainer'
 import { MarkNote } from './_components/MarkNote'
 import { StickyNote } from '@/components/StackedNotes'
 

@@ -1,24 +1,23 @@
-import React from 'react'
-import Markdoc from '@markdoc/markdoc'
 import { reader } from '@/lib/keystatic/reader'
-import { Prose } from '@/components/Prose'
+import { MarkNote } from '../../_components/MarkNote'
+import { StickyNote } from '@/components/StackedNotes'
 
-export default async function Post({ params }: { params: { slug: string } }) {
-  const post = await reader.collections.notes.read(params.slug)
-  if (!post) {
-    return <div>No Post Found</div>
+export default async function NotePage({
+  params
+}: {
+  params: { slug: string }
+}) {
+  const entry = await reader.collections.notes.read(params.slug, {
+    resolveLinkedFiles: true
+  })
+
+  if (!entry) {
+    throw new Error('404')
   }
-  const { node } = await post.content()
-  const errors = Markdoc.validate(node)
-  if (errors.length) {
-    console.error(errors)
-    throw new Error('Invalid content')
-  }
-  const renderable = Markdoc.transform(node)
+
   return (
-    <Prose title={post.title}>
-      {/* @ts-expect-error */}
-      {Markdoc.renderers.react(renderable, React)}
-    </Prose>
+    <StickyNote title={entry.title} index={0}>
+      <MarkNote entry={entry} />
+    </StickyNote>
   )
 }
