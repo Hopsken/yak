@@ -4,7 +4,7 @@ const nextConfig = {
     return {
       fallback: [
         {
-          source: '/',
+          source: '/:path*',
           destination: '/notes/home'
         }
       ]

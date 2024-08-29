@@ -31,7 +31,21 @@ export function HyperLink({ from, href, children }: Props) {
 
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!target || !isNoteLink) return
+      if (!target || !isNoteLink) {
+        return
+      }
+
+      // open link if holding alt
+      if (e.altKey) {
+        e.preventDefault()
+        router.push(href)
+        return
+      }
+
+      // respect cmd/ctrl/shift shortcuts
+      if (e.metaKey || e.ctrlKey || e.shiftKey) {
+        return
+      }
 
       e.preventDefault()
 
@@ -54,6 +68,7 @@ export function HyperLink({ from, href, children }: Props) {
       router.push(pathname + '?' + params.toString())
       return
     },
+
     [from, isNoteLink, notes, pathname, router, scrollTo, searchParams, target]
   )
 
