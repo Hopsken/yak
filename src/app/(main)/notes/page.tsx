@@ -1,5 +1,5 @@
 import { createReader } from '@keystatic/core/reader'
-import keystaticConfig from '../../../keystatic.config'
+import keystaticConfig from '../../../../keystatic.config'
 
 import Link from 'next/link'
 
