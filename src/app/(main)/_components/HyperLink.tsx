@@ -4,14 +4,14 @@ import Link from 'next/link'
 import React, { PropsWithChildren, useCallback, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useScrollTo } from '@/components/StackedNotes/context'
+import { useNotes } from '../_store'
 
 type Props = PropsWithChildren<{
-  root: string
   href: string
   from: string
 }>
 
-export function HyperLink({ root, from, href, children }: Props) {
+export function HyperLink({ from, href, children }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -27,10 +27,7 @@ export function HyperLink({ root, from, href, children }: Props) {
     return null
   }, [href])
 
-  const notes = useMemo(
-    () => [root].concat(searchParams.getAll('note')),
-    [root, searchParams]
-  )
+  const { notes } = useNotes()
 
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {

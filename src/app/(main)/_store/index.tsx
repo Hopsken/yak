@@ -1,41 +1,35 @@
 'use client'
 
-import { NoteEntry } from '@/type'
 import { PropsWithChildren, createContext, useContext, useMemo } from 'react'
-import { createStore, useStore } from 'zustand'
 
-type NotesStore = {
-  notes: NoteEntry[]
-  appendNote: (entry: NoteEntry) => void
+type Context = {
+  root: string
+  notes: string[]
 }
 
-function createNotesStore(first?: NoteEntry) {
-  return createStore<NotesStore>(set => ({
-    notes: first ? [first] : [],
-    appendNote: entry => {
-      set(prev => ({ ...prev, notes: [...prev.notes, entry] }))
-    }
-  }))
-}
+const NotesContext = createContext<Context>({
+  root: '',
+  notes: []
+})
 
-const NotesStoreContext = createContext(createNotesStore())
-
-export function NoteStoreProvider({ children }: PropsWithChildren<{}>) {
-  const store = useMemo(() => {
-    return createNotesStore()
-  }, [])
-  return (
-    <NotesStoreContext.Provider value={store}>
-      {children}
-    </NotesStoreContext.Provider>
+export function NotesProvider({
+  children,
+  root,
+  notes
+}: PropsWithChildren<{
+  root: string
+  notes: string[]
+}>) {
+  const value = useMemo(
+    () => ({
+      root,
+      notes
+    }),
+    [root, notes]
   )
-}
-
-export function useNotesStore() {
-  return useContext(NotesStoreContext)
+  return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>
 }
 
 export function useNotes() {
-  const store = useNotesStore()
-  return useStore(store, s => s.notes)
+  return useContext(NotesContext)
 }
