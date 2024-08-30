@@ -3,13 +3,14 @@ import { config, fields, collection } from '@keystatic/core'
 
 export default config({
   storage: {
-    kind: 'local'
+    kind: 'github',
+    repo: 'hopsken/garden'
   },
   collections: {
     notes: collection({
-      label: 'Posts',
+      label: 'Notes',
       slugField: 'title',
-      path: 'src/content/posts/*',
+      path: 'content/notes/*',
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({
