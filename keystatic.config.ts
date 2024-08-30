@@ -2,11 +2,15 @@
 import { config, fields, collection } from '@keystatic/core'
 import yak from './yak.config'
 
+const LOCAL_MODE = !!process.env.LOCAL_MODE
+
 export default config({
-  storage: {
-    kind: 'github',
-    repo: yak.repo
-  },
+  storage: LOCAL_MODE
+    ? { kind: 'local' }
+    : {
+        kind: 'github',
+        repo: yak.repo
+      },
   collections: {
     notes: collection({
       label: 'Notes',

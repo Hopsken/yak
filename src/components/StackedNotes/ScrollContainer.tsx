@@ -10,6 +10,7 @@ import React, {
 } from 'react'
 import { useSetScrollTo, useSetStackedByScroll } from './context'
 import throttle from 'lodash.throttle'
+import clsx from 'clsx'
 
 const throttleTime = 16
 
@@ -42,12 +43,14 @@ export function ScrollContainer({
   return (
     <main
       ref={containerRef}
-      className='flex grow overflow-x-auto overflow-y-auto'
+      className='flex grow flex-col overflow-x-hidden md:flex-row md:overflow-x-auto md:overflow-y-auto'
       onScroll={onScroll}
     >
       <div
-        className='grow-1 flex'
-        style={{ width: panes * paneSettings.width }}
+        className={clsx(
+          'w-full md:flex md:grow',
+          `md:w-[${panes * paneSettings.width}px]`
+        )}
       >
         {children}
       </div>
