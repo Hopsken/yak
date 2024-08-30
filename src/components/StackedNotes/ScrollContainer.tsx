@@ -2,6 +2,7 @@
 
 import { paneSettings } from '@/consts'
 import React, {
+  CSSProperties,
   PropsWithChildren,
   useCallback,
   useLayoutEffect,
@@ -47,10 +48,12 @@ export function ScrollContainer({
       onScroll={onScroll}
     >
       <div
-        className={clsx(
-          'w-full md:flex md:grow',
-          `md:w-[${panes * paneSettings.width}px]`
-        )}
+        className='w-full md:flex md:w-[var(--panes-width)] md:grow'
+        style={
+          {
+            '--panes-width': `calc(${paneSettings.width} * ${panes})`
+          } as CSSProperties
+        }
       >
         {children}
       </div>

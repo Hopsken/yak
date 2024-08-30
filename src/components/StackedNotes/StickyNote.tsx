@@ -21,7 +21,7 @@ export function StickyNote({ index, title, children }: Props) {
   return (
     <div
       className={clsx(
-        'sticky top-0 w-[625px] min-w-[625px] overflow-y-auto border-l bg-white first-of-type:border-none',
+        'sticky top-0 w-full overflow-y-auto border-t bg-white first-of-type:border-none md:w-[625px] md:min-w-[625px] md:border-l md:border-t-0',
         { 'shadow-xl': withShadow }
       )}
       style={offset}
