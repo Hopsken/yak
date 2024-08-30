@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Yak
 
-## Getting Started
+> WIP: this project is still on WIP state.
 
-First, run the development server:
+Yak is a tool to build your own digital garden, powered by Next.js and [Keystatic](https://keystatic.com/).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Inspired by [Andy's working notes](https://notes.andymatuschak.org/).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Demo: [https://hopsken.com](https://hopsken.com)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Highlights
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+**Fast and responsive**
 
-## Learn More
+- Fast page render powered by Next.js SSR
+- Responsive design
+- SEO friendly
 
-To learn more about Next.js, take a look at the following resources:
+**File based storage**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Own your own content
+- Use Github repo as the content storage
+- Admin UI with live edit! Powered by Keystatic!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Quick start
 
-## Deploy on Vercel
+- Star this repo
+- Fork this project & clone
+- Customize `yak.config.js` and choose a repo to store your content. Recommend create another repo for this.
+- Replace `favicon.icon` in `/public` folder with your own
+- Run `pnpm run dev` and go to `localhost:3000/keystatic`. Follow the step to create a Github App. Some environment variables will be generated in a `.env` file. Copy them.
+- Create a Github Personal Access Token with read access to your content repo.
+- Deploy to the platform of your choose and set the environment acquired from last steps.
+  - ...from env file
+  - `GITHUB_ACCESS_TOKEN`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Roadmap
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [] Support `[[page]]` syntax
+- [] Dark mode
+- [] Site map
+- [] ...
+
+## Technical details
+
+Yak uses Keystatic for content management. It's a super awesome project allows you to save your content as files while offer very powerful features including a WYSIWYG editor, rich content, highly customizable collections, Github based collaboration and so on.
+
+## Contributors
+
+Hopsken
+
+## License
+
+MIT License
