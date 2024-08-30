@@ -1,5 +1,6 @@
 # Yak
 
+> [!WARNING]
 > WIP: this project is still on WIP state.
 
 Yak is a tool to build your own digital garden, powered by Next.js and [Keystatic](https://keystatic.com/).
