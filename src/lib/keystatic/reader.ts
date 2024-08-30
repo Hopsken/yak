@@ -1,10 +1,15 @@
-import { createReader } from '@keystatic/core/reader'
+import { createGitHubReader } from '@keystatic/core/reader/github'
 
 import keystaticConfig from '../../../keystatic.config'
 import { singletonSync } from '@/utils/singleton'
+import yak from '../../../yak.config'
 
 export const reader = singletonSync(
-  () => createReader(process.cwd(), keystaticConfig),
+  () =>
+    createGitHubReader(keystaticConfig, {
+      repo: `${yak.repo.owner}/${yak.repo.name}`,
+      token: process.env.GITHUB_ACCESS_TOKEN
+    }),
   'keystatic-reader'
 )
 

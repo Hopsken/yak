@@ -1,10 +1,11 @@
 // keystatic.config.ts
 import { config, fields, collection } from '@keystatic/core'
+import yak from './yak.config'
 
 export default config({
   storage: {
     kind: 'github',
-    repo: 'hopsken/garden'
+    repo: yak.repo
   },
   collections: {
     notes: collection({
