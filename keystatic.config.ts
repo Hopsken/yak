@@ -1,6 +1,7 @@
 // keystatic.config.ts
 import { config, fields, collection } from '@keystatic/core'
 import yak from './yak.config'
+import { generateSlug } from '@/utils/generate-slug'
 
 const LOCAL_MODE = !!process.env.LOCAL_MODE
 
@@ -19,7 +20,11 @@ export default config({
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({
-          name: { label: 'Title', validation: { isRequired: true } }
+          name: { label: 'Title', validation: { isRequired: true } },
+          slug: {
+            generate: generateSlug,
+            description: "Don't change. Automatically generated from the title"
+          }
         }),
         pubDate: fields.date({
           label: 'Publish date',

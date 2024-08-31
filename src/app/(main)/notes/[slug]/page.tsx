@@ -1,4 +1,4 @@
-import { getNoteBySlug } from '@/lib/keystatic/reader'
+import { getNoteBySlug, reader } from '@/lib/keystatic/reader'
 import { MarkNote } from '../../_components/MarkNote'
 import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 import { NotesProvider } from '../../_store'
