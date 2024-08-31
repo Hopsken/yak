@@ -5,6 +5,7 @@ import React, { PropsWithChildren, useCallback, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useScrollTo } from '@/components/StackedNotes/context'
 import { useNotes } from '../_store'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 type Props = PropsWithChildren<{
   href: string
@@ -16,6 +17,7 @@ export function HyperLink({ from, href, children }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const scrollTo = useScrollTo()
+  const isMobile = useIsMobile()
 
   const isNoteLink = useMemo(() => href.startsWith('/notes'), [href])
 
@@ -31,7 +33,7 @@ export function HyperLink({ from, href, children }: Props) {
 
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!target || !isNoteLink) {
+      if (!target || !isNoteLink || isMobile) {
         return
       }
 
@@ -68,8 +70,18 @@ export function HyperLink({ from, href, children }: Props) {
       router.push(pathname + '?' + params.toString())
       return
     },
-
-    [from, isNoteLink, notes, pathname, router, scrollTo, searchParams, target]
+    [
+      from,
+      href,
+      isMobile,
+      isNoteLink,
+      notes,
+      pathname,
+      router,
+      scrollTo,
+      searchParams,
+      target
+    ]
   )
 
   return (
