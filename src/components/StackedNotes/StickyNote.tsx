@@ -34,14 +34,14 @@ export function StickyNote({ index, title, children }: Props) {
     <div
       ref={ref}
       className={clsx(
-        'sticky top-0 w-full overflow-y-auto border-t bg-white first-of-type:border-none md:w-[625px] md:min-w-[625px] md:border-l md:border-t-0',
+        'sticky top-0 w-full overflow-y-auto border-t bg-white [transition:box-shadow_100ms_linear] first-of-type:border-none md:w-[625px] md:min-w-[625px] md:border-l md:border-t-0 dark:border-zinc-700 dark:bg-zinc-800',
         { 'shadow-xl': withShadow }
       )}
       style={offset}
     >
       <div
         className={clsx(
-          'h-full overflow-hidden p-8 [transition:box-shadow_100ms_linear,opacity_75ms_linear]',
+          'h-full overflow-hidden p-8 [transition:opacity_75ms_linear]',
           {
             'opacity-0': willBeObscured
           }
