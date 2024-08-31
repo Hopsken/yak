@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useScrollTo } from '@/components/StackedNotes/context'
 import { useNotes } from '../_store'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import { isExternalLink } from '@/utils/is-external-link'
+import { HiArrowTopRightOnSquare } from 'react-icons/hi2'
 
 type Props = PropsWithChildren<{
   href: string
@@ -20,6 +22,7 @@ export function HyperLink({ from, href, children }: Props) {
   const isMobile = useIsMobile()
 
   const isNoteLink = useMemo(() => href.startsWith('/notes'), [href])
+  const isExternal = useMemo(() => isExternalLink(href), [href])
 
   const target = useMemo(() => {
     if (href.startsWith('/notes')) {
@@ -85,8 +88,14 @@ export function HyperLink({ from, href, children }: Props) {
   )
 
   return (
-    <Link href={href} scroll={false} onClick={onClick}>
+    <Link
+      href={href}
+      scroll={false}
+      onClick={onClick}
+      className='inline-flex items-center gap-1'
+    >
       {children}
+      {isExternal && <HiArrowTopRightOnSquare />}
     </Link>
   )
 }
