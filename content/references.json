@@ -1,11 +1,10 @@
 {
   "notes": [
     {
-      "slug": "nextjs",
-      "title": "NextJS",
+      "slug": "facebook",
+      "title": "Facebook",
       "backlinks": [
-        "hello-world",
-        "home"
+        "react"
       ]
     },
     {
@@ -16,18 +15,24 @@
       ]
     },
     {
+      "slug": "nextjs",
+      "title": "NextJS",
+      "backlinks": [
+        "hello-world",
+        "home"
+      ]
+    },
+    {
+      "slug": "home",
+      "title": "About",
+      "backlinks": []
+    },
+    {
       "slug": "react",
       "title": "React",
       "backlinks": [
         "home",
         "nextjs"
-      ]
-    },
-    {
-      "slug": "facebook",
-      "title": "Facebook",
-      "backlinks": [
-        "react"
       ]
     }
   ]

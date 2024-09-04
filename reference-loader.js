@@ -44,7 +44,11 @@ function parseMDocFiles(targetDir) {
 function findReferences(notesByTitle) {
   const references = {}
 
-  for (const [_, note] of Object.entries(notesByTitle)) {
+  for (const [title, note] of Object.entries(notesByTitle)) {
+    if (!references[note.slug]) {
+      references[note.slug] = { title, backlinks: [] }
+    }
+
     note.titles.forEach(refer => {
       const link = notesByTitle[refer].slug
       if (!references[link]) {

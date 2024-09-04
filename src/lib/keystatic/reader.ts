@@ -1,9 +1,13 @@
 import { createGitHubReader } from '@keystatic/core/reader/github'
-import { createReader } from '@keystatic/core/reader'
+import {
+  EntryWithResolvedLinkedFiles,
+  createReader
+} from '@keystatic/core/reader'
 
 import keystaticConfig from '../../../keystatic.config'
 import { singletonSync } from '@/utils/singleton'
 import yak from '../../../yak.config'
+import { FullNote } from '@/type'
 
 const LOCAL_MODE = !!process.env.LOCAL_MODE
 
@@ -16,9 +20,49 @@ export const reader = singletonSync(() => {
       })
 }, 'keystatic-reader')
 
-export const getNoteBySlug = async (slug: string) => {
-  const note = await reader.collections.notes.read(slug, {
-    resolveLinkedFiles: true
-  })
-  return note
+type BacklinksMap = Record<
+  string,
+  {
+    title: string
+    backlinks: string[]
+  }
+>
+
+export const getReferenceMap = async (): Promise<BacklinksMap> => {
+  const referenceMap = await reader.singletons.references.read()
+  const { notes } = referenceMap || {}
+
+  if (!notes) return {} as BacklinksMap
+
+  return notes?.reduce((acc, cur) => {
+    const slug = cur.slug
+    if (!slug) return acc
+    acc[slug] = {
+      title: cur.title,
+      backlinks: cur.backlinks.filter((i): i is string => !!i)
+    }
+    return acc
+  }, {} as BacklinksMap)
+}
+
+export const getNoteBySlug = async (slug: string): Promise<FullNote | null> => {
+  const [note, references] = await Promise.all([
+    reader.collections.notes.read(slug, {
+      resolveLinkedFiles: true
+    }),
+    getReferenceMap()
+  ])
+
+  if (!note) return null
+
+  const backlinks =
+    references[slug]?.backlinks.map(slug => ({
+      title: references[slug]?.title || '',
+      slug
+    })) || []
+
+  return {
+    ...note,
+    backlinks
+  }
 }

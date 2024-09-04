@@ -2,6 +2,7 @@ import { getNoteBySlug, reader } from '@/lib/keystatic/reader'
 import { MarkNote } from '../../_components/MarkNote'
 import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 import { NotesProvider } from '../../_store'
+import { Backlinks } from '../../_components/Backlinks'
 
 export default async function NotePage({
   params,
@@ -41,6 +42,10 @@ export default async function NotePage({
             entry && (
               <StickyNote key={entry.title} title={entry.title} index={index}>
                 <MarkNote slug={entry.slug} entry={entry} />
+                <Backlinks
+                  backlinks={entry.backlinks}
+                  currentNote={entry.slug}
+                />
               </StickyNote>
             )
         )}

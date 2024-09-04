@@ -8,3 +8,7 @@ export type NoteEntry = EntryWithResolvedLinkedFiles<
 export type RawNoteEntry = Omit<NoteEntry, 'content'> & {
   content: string
 }
+
+export type FullNote = NoteEntry & {
+  backlinks: Array<{ title: string; slug: string }>
+}
