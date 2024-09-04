@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
-      <body className='bg-[#fafafc] antialiased dark:bg-zinc-900 dark:text-zinc-100'>
+      <body className='bg-white antialiased dark:bg-zinc-900 dark:text-zinc-100 md:bg-[#fafafc]'>
         <ThemeProvider attribute='class'>{children}</ThemeProvider>
       </body>
     </html>
