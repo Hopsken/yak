@@ -1,0 +1,34 @@
+{
+  "notes": [
+    {
+      "slug": "nextjs",
+      "title": "NextJS",
+      "backlinks": [
+        "hello-world",
+        "home"
+      ]
+    },
+    {
+      "slug": "hello-world",
+      "title": "Hello World",
+      "backlinks": [
+        "home"
+      ]
+    },
+    {
+      "slug": "react",
+      "title": "React",
+      "backlinks": [
+        "home",
+        "nextjs"
+      ]
+    },
+    {
+      "slug": "facebook",
+      "title": "Facebook",
+      "backlinks": [
+        "react"
+      ]
+    }
+  ]
+}
