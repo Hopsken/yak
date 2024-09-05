@@ -6,13 +6,13 @@ import { generateSlug } from '@/utils/generate-slug'
 const LOCAL_MODE = !!process.env.LOCAL_MODE
 
 export default config({
-  // storage: LOCAL_MODE
-  //   ? { kind: 'local' }
-  //   : {
-  //       kind: 'github',
-  //       repo: yak.repo
-  //     },
-  storage: { kind: 'local' },
+  storage: LOCAL_MODE
+    ? { kind: 'local' }
+    : {
+        kind: 'github',
+        repo: yak.repo
+      },
+  // storage: { kind: 'local' },
   collections: {
     notes: collection({
       label: 'Notes',
