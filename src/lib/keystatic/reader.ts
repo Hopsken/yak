@@ -7,7 +7,7 @@ import {
 import keystaticConfig from '../../../keystatic.config'
 import { singletonSync } from '@/utils/singleton'
 import yak from '../../../yak.config'
-import { FullNote } from '@/type'
+import { ContentNote, AnyNote } from '@/type'
 
 const LOCAL_MODE = !!process.env.LOCAL_MODE
 
@@ -45,7 +45,7 @@ export const getReferenceMap = async (): Promise<BacklinksMap> => {
   }, {} as BacklinksMap)
 }
 
-export const getNoteBySlug = async (slug: string): Promise<FullNote | null> => {
+export const getNoteBySlug = async (slug: string): Promise<AnyNote> => {
   const [note, references] = await Promise.all([
     reader.collections.notes.read(slug, {
       resolveLinkedFiles: true
@@ -53,13 +53,19 @@ export const getNoteBySlug = async (slug: string): Promise<FullNote | null> => {
     getReferenceMap()
   ])
 
-  if (!note) return null
-
   const backlinks =
     references[slug]?.backlinks.map(slug => ({
       title: references[slug]?.title || '',
       slug
     })) || []
+
+  // if no file exist for note, then only render the backlinks of it.
+  if (!note) {
+    return {
+      title: references[slug]?.title || '',
+      backlinks
+    }
+  }
 
   return {
     ...note,

@@ -3,7 +3,7 @@ import { config, fields, collection, singleton } from '@keystatic/core'
 import yak from './yak.config'
 import { generateSlug } from '@/utils/generate-slug'
 
-const LOCAL_MODE = !!process.env.LOCAL_MODE
+const LOCAL_MODE = true
 
 export default config({
   storage: LOCAL_MODE

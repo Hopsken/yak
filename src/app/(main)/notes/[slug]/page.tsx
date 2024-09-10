@@ -3,6 +3,7 @@ import { MarkNote } from '../../_components/MarkNote'
 import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 import { NotesProvider } from '../../_store'
 import { Backlinks } from '../../_components/Backlinks'
+import { isContentNote } from '../../_helper/note'
 
 export default async function NotePage({
   params,
@@ -41,7 +42,9 @@ export default async function NotePage({
           (entry, index) =>
             entry && (
               <StickyNote key={entry.title} title={entry.title} index={index}>
-                <MarkNote slug={entry.slug} entry={entry} />
+                {isContentNote(entry) ? (
+                  <MarkNote slug={entry.slug} entry={entry} />
+                ) : null}
                 <Backlinks
                   backlinks={entry.backlinks}
                   currentNote={entry.slug}

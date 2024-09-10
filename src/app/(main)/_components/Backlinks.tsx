@@ -1,10 +1,10 @@
-import { FullNote } from '@/type'
+import { ContentNote } from '@/type'
 import { HyperLink } from './HyperLink'
 import { HiArrowDownLeft } from 'react-icons/hi2'
 
 type Props = {
   currentNote: string
-  backlinks: FullNote['backlinks']
+  backlinks: ContentNote['backlinks']
 }
 
 export function Backlinks({ currentNote, backlinks }: Props) {

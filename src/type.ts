@@ -9,6 +9,12 @@ export type RawNoteEntry = Omit<NoteEntry, 'content'> & {
   content: string
 }
 
-export type FullNote = NoteEntry & {
+type WithBacklinks = {
   backlinks: Array<{ title: string; slug: string }>
 }
+
+export type VirtualNote = Omit<NoteEntry, 'content'> & WithBacklinks
+
+export type ContentNote = NoteEntry & WithBacklinks
+
+export type AnyNote = VirtualNote | ContentNote

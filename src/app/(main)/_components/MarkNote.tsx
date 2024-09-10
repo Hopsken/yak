@@ -1,6 +1,6 @@
 import Markdoc, { Tag, RenderableTreeNodes } from '@markdoc/markdoc'
 import React, { ReactNode } from 'react'
-import { NoteEntry } from '@/type'
+import { ContentNote } from '@/type'
 import { HyperLink } from './HyperLink'
 import { generateSlug } from '@/utils/generate-slug'
 
@@ -37,7 +37,13 @@ function parseBracketLink(content: string): RenderableTreeNodes {
   return result
 }
 
-export function MarkNote({ slug, entry }: { slug: string; entry: NoteEntry }) {
+export function MarkNote({
+  slug,
+  entry
+}: {
+  slug: string
+  entry: ContentNote
+}) {
   const { node } = entry.content
   const errors = Markdoc.validate(node)
 

@@ -34,6 +34,13 @@
         "home",
         "nextjs"
       ]
+    },
+    {
+      "slug": "lorem-ipsum",
+      "title": "Lorem Ipsum",
+      "backlinks": [
+        "home"
+      ]
     }
   ]
 }
