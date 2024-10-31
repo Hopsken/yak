@@ -1,5 +1,6 @@
 import { siteSettings } from '@/consts'
 import ThemeToggle from './ThemeToggle'
+import Link from 'next/link'
 
 export function Header() {
   return (
@@ -8,7 +9,10 @@ export function Header() {
         <a href='/'>{siteSettings.title}</a>
       </div>
 
-      <ThemeToggle />
+      <div className='flex items-center gap-4 text-base font-medium text-zinc-600'>
+        <Link href='/'>{'ls'}</Link>
+        <ThemeToggle />
+      </div>
     </header>
   )
 }
