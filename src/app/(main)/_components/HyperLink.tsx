@@ -94,8 +94,8 @@ export function HyperLink({ from, href, children }: Props) {
       onClick={onClick}
       className='inline-flex items-center gap-1'
     >
-      {children}
       {isExternal && <HiArrowTopRightOnSquare />}
+      <span>{children}</span>
     </Link>
   )
 }
