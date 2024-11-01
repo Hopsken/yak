@@ -10,7 +10,7 @@ export function Header() {
       </div>
 
       <div className='flex items-center gap-4 text-base font-medium text-zinc-600'>
-        <Link href='/notes'>{'ls -a'}</Link>
+        <Link href='/notes'>{'~ls'}</Link>
         <ThemeToggle />
       </div>
     </header>
