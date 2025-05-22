@@ -86,7 +86,6 @@ export function MarkNote({
 
   return (
     <>
-      {/*  @ts-expect-error */}
       {Markdoc.renderers.react(renderable, React, {
         components: {
           Link: ({ href, children }: { href: string; children: ReactNode }) => {
