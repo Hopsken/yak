@@ -23,6 +23,13 @@
       ]
     },
     {
+      "slug": "daily",
+      "title": "daily",
+      "backlinks": [
+        "hello-world"
+      ]
+    },
+    {
       "slug": "home",
       "title": "About",
       "backlinks": []

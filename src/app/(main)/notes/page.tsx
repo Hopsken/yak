@@ -1,10 +1,10 @@
-import { reader } from '@/lib/keystatic/reader'
 import { HiArrowDownLeft } from 'react-icons/hi2'
 import Link from 'next/link'
 import { Prose } from '@/components/Prose'
+import { NoteService } from '@/lib/note-service'
 
 export default async function NotesPage() {
-  const notes = await reader.collections.notes.all()
+  const notes = await NoteService.instance.listNotes()
 
   return (
     <main className='flex grow flex-col overflow-x-hidden md:flex-row md:overflow-x-auto md:overflow-y-hidden'>

@@ -1,9 +1,9 @@
-import { getNoteBySlug, reader } from '@/lib/keystatic/reader'
 import { MarkNote } from '../../_components/MarkNote'
 import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 import { NotesProvider } from '../../_store'
 import { Backlinks } from '../../_components/Backlinks'
 import { isContentNote } from '../../_helper/note'
+import { NoteService } from '@/lib/note-service'
 
 export default async function NotePage({
   params,
@@ -15,10 +15,13 @@ export default async function NotePage({
   const rootNote = params.slug
   const leafNotes = searchParams.note || []
 
-  const entries = await Promise.all(
+  const noteService = NoteService.instance
+
+  const loadedEntries = await Promise.all(
     [rootNote].concat(leafNotes).map(async slug => {
-      const entry = await getNoteBySlug(slug)
+      const entry = await noteService.getNoteBySlug(slug)
       if (!entry) return null
+
       return {
         slug,
         ...entry
@@ -26,6 +29,7 @@ export default async function NotePage({
     })
   )
 
+  const entries = loadedEntries.filter((i): i is NonNullable<typeof i> => !!i)
   const [root] = entries
 
   if (!root || !entries.length) {

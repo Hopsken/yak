@@ -6,12 +6,12 @@ import { generateSlug } from '@/utils/generate-slug'
 
 function parseBracketLink(content: string): RenderableTreeNodes {
   // shortcut
-  if (!content.includes('[[')) {
+  if (!content.includes('[[') && !content.includes('#')) {
     return content
   }
 
   const result = []
-  const regex = /\[\[([^\]]+)\]\]/g
+  const regex = /(?:\[\[([^\]]+)\]\]|#(\w+))/g
   let lastIndex = 0
   let match
 
@@ -22,8 +22,15 @@ function parseBracketLink(content: string): RenderableTreeNodes {
     }
 
     // Push the Node object
-    const title = match[1]
-    result.push(new Tag('BracketLink', { slug: generateSlug(title) }, [title]))
+    const title = match[1] || match[2]
+    result.push(
+      new Tag('BracketLink', { slug: generateSlug(title) }, [
+        // if #hashtag then render as is, if [[bracket link]] then render as a link
+        // #hashtag => <BracketLink slug="hashtag">#hashtag</BracketLink>
+        // [[bracket link]] => <BracketLink slug="bracket-link">bracket link</BracketLink>
+        match[2] ? match[0] : match[1]
+      ])
+    )
 
     // Update lastIndex
     lastIndex = regex.lastIndex
