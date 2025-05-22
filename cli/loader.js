@@ -36,11 +36,11 @@ function parseMDocFiles(targetDir) {
 
       if (frontmatter.title) {
         const titles = []
-        const regex = /\[\[(.*?)\]\]/g
+        const regex = /(?:\[\[([^\]]+)\]\]|#(\w+))/g
         let match
 
         while ((match = regex.exec(content)) !== null) {
-          titles.push(match[1])
+          titles.push(match[1] || match[2])
         }
 
         notes[frontmatter.title] = {

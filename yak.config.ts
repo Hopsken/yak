@@ -9,6 +9,8 @@ type Config = {
       websiteId: string
     }
   }
+
+  links?: Array<{ href: string; text: string }>
 }
 
 const config: Config = {
@@ -25,7 +27,21 @@ const config: Config = {
             websiteId: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID
           }
         : undefined
-  }
+  },
+  links: [
+    {
+      href: '/notes',
+      text: '~ls'
+    },
+    {
+      href: '/notes/daily',
+      text: 'Daily'
+    },
+    {
+      href: '/notes/article',
+      text: 'Article'
+    }
+  ]
 }
 
 export default config
