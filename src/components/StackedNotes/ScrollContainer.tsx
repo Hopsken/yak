@@ -47,7 +47,7 @@ export function ScrollContainer({
       onScroll={onScroll}
     >
       <div
-        className='w-full md:flex md:w-[var(--panes-width)] md:grow'
+        className='w-full md:flex md:w-(--panes-width) md:grow'
         style={
           {
             '--panes-width': `calc(${paneSettings.width} * ${panes})`
