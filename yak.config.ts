@@ -36,10 +36,6 @@ const config: Config = {
     {
       href: '/notes/daily',
       text: 'Daily'
-    },
-    {
-      href: '/notes/article',
-      text: 'Article'
     }
   ]
 }
