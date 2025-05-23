@@ -2,9 +2,12 @@ import Markdoc, { Tag, RenderableTreeNodes } from '@markdoc/markdoc'
 import React, { ReactNode } from 'react'
 import { ContentNote } from '@/type'
 import { HyperLink } from './HyperLink'
-import { generateSlug } from '@/utils/generate-slug'
+import { lower } from '@/utils/lower'
 
-function parseBracketLink(content: string): RenderableTreeNodes {
+function parseBracketLink(
+  content: string,
+  slugByTitle: Record<string, string>
+): RenderableTreeNodes {
   // shortcut
   if (!content.includes('[[') && !content.includes('#')) {
     return content
@@ -22,9 +25,16 @@ function parseBracketLink(content: string): RenderableTreeNodes {
     }
 
     // Push the Node object
-    const title = match[1] || match[2]
+    const title = lower(match[1] || match[2])
+    const slug = slugByTitle[title]
+
+    if (!slug) {
+      console.error(`No slug found for title: ${title}`)
+      continue
+    }
+
     result.push(
-      new Tag('BracketLink', { slug: generateSlug(title) }, [
+      new Tag('BracketLink', { slug }, [
         // if #hashtag then render as is, if [[bracket link]] then render as a link
         // #hashtag => <BracketLink slug="hashtag">#hashtag</BracketLink>
         // [[bracket link]] => <BracketLink slug="bracket-link">bracket link</BracketLink>
@@ -46,10 +56,12 @@ function parseBracketLink(content: string): RenderableTreeNodes {
 
 export function MarkNote({
   slug,
-  entry
+  entry,
+  slugByTitle
 }: {
   slug: string
   entry: ContentNote
+  slugByTitle: Record<string, string>
 }) {
   const { node } = entry.content
   const errors = Markdoc.validate(node)
@@ -67,7 +79,7 @@ export function MarkNote({
         transform(node) {
           const content = node.attributes.content
           if (typeof content === 'string') {
-            return parseBracketLink(content)
+            return parseBracketLink(content, slugByTitle)
           }
           return content
         }

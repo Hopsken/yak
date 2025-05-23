@@ -1,6 +1,13 @@
 {
   "notes": [
     {
+      "slug": "20250523",
+      "title": "First Note",
+      "backlinks": [
+        "home"
+      ]
+    },
+    {
       "slug": "facebook",
       "title": "Facebook",
       "backlinks": [

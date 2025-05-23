@@ -32,6 +32,8 @@ export default async function NotePage({
   const entries = loadedEntries.filter((i): i is NonNullable<typeof i> => !!i)
   const [root] = entries
 
+  const slugByTitle = await noteService.getSlugByTitle()
+
   if (!root || !entries.length) {
     throw new Error('404')
   }
@@ -47,7 +49,11 @@ export default async function NotePage({
             entry && (
               <StickyNote key={entry.title} title={entry.title} index={index}>
                 {isContentNote(entry) ? (
-                  <MarkNote slug={entry.slug} entry={entry} />
+                  <MarkNote
+                    slug={entry.slug}
+                    entry={entry}
+                    slugByTitle={slugByTitle}
+                  />
                 ) : null}
                 <Backlinks
                   backlinks={entry.backlinks}

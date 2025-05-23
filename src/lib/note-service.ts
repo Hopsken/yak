@@ -1,5 +1,7 @@
 import { AnyNote } from '@/type'
 import { createReader } from './keystatic/reader'
+import { matchLinks } from '@/app/(main)/_helper/note'
+import { lower } from '@/utils/lower'
 
 type NoteMeta = {
   title: string
@@ -61,8 +63,6 @@ export class NoteService {
   }
 
   async getNoteBySlug(slug: string): Promise<AnyNote> {
-    const graph = await this.buildGraph()
-
     const [note, backlinks] = await Promise.all([
       this.reader.collections.notes.read(slug, {
         resolveLinkedFiles: true
@@ -89,35 +89,31 @@ export class NoteService {
     return this.reader.collections.notes.all()
   }
 
-  private mapTitleToSlug: Map<string, string> | null = null
-  private async buildMapTitleToSlug() {
+  private mapTitleToSlug: Record<string, string> | null = null
+  public async getSlugByTitle() {
     if (this.mapTitleToSlug) return this.mapTitleToSlug
 
     const graph = await this.buildGraph()
-    const mapping = new Map<string, string>()
+    const mapping: Record<string, string> = {}
     for (const note of graph.values()) {
-      mapping.set(note.title, note.slug)
+      const lowered = lower(note.title)
+      mapping[lowered] = note.slug
     }
     this.mapTitleToSlug = mapping
     return mapping
   }
 
-  private formatContent(content: string) {
-    const lines = content.split('\n')
-    const title = lines[0].replace('# ', '')
-    const body = lines.slice(1).join('\n')
-    return { title, body }
-  }
+  private async formatLinks(content: string) {
+    const mapTitleToSlug = await this.getSlugByTitle()
+    const links = matchLinks(content)
+    return links
+      .map(link => {
+        const slug = mapTitleToSlug[link.title]
 
-  private async convertLinks(content: string) {
-    const mapTitleToSlug = await this.buildMapTitleToSlug()
-    const titleToLink = (title: string) => {
-      const slug = mapTitleToSlug.get(title)
-      return `[${title}](/notes/${slug})`
-    }
+        if (!slug) return null
 
-    return content
-      .replace(/\[\[(.*?)\]\]/g, (_, title) => titleToLink(title))
-      .replace(/#(\w+)/g, (_, title) => titleToLink(title))
+        return { ...link, slug }
+      })
+      .filter((i): i is { title: string; text: string; slug: string } => !!i)
   }
 }
