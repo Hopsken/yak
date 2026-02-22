@@ -3,7 +3,13 @@ import { config, fields, collection, singleton } from '@keystatic/core'
 import yak from './yak.config'
 import { generateSlug } from '@/utils/generate-slug'
 
-const LOCAL_MODE = process.env.NODE_ENV === 'development'
+const hasGithubKeystaticEnv =
+  !!process.env.KEYSTATIC_GITHUB_CLIENT_ID &&
+  !!process.env.KEYSTATIC_GITHUB_CLIENT_SECRET &&
+  !!process.env.KEYSTATIC_SECRET
+
+const LOCAL_MODE =
+  process.env.NODE_ENV === 'development' || !hasGithubKeystaticEnv
 
 export default config({
   storage: LOCAL_MODE
