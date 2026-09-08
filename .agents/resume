@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This app needs no authentication or backing-service repair on resume.
+# Dependencies and local configuration are retained in the orb snapshot.
+echo 'Orb ready; no resume work required'

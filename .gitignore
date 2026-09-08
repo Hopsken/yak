@@ -31,6 +31,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# orb portal metadata
+.amp/portals/*
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

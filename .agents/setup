@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+SECONDS=0
+
+echo 'Checking the orb Node.js toolchain'
+# Node.js and Corepack are supplied by the orb base image.
+node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 20 || (major === 20 && minor < 9)) throw new Error("Next.js requires Node.js >= 20.9")'
+node --version
+
+echo 'Preparing the package manager pinned in package.json'
+corepack enable pnpm
+corepack prepare "$(node -p 'require("./package.json").packageManager')" --activate
+pnpm --version
+
+echo "Installing locked dependencies (${SECONDS}s elapsed)"
+CI=true pnpm install --frozen-lockfile
+
+# Use the checked-in notes without credentials. Preserve existing configuration.
+if [[ ! -f .env.local ]]; then
+  printf 'LOCAL_MODE=true\n' > .env.local
+fi
+
+echo "Orb setup finished in ${SECONDS}s"
