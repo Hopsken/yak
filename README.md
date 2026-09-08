@@ -27,6 +27,8 @@ Demo: [https://hopsken.com](https://hopsken.com)
 
 - Star this repo
 - Fork this project & clone
+- Install [mise](https://mise.jdx.dev/getting-started.html), then run `mise trust` and `mise install` to install the pinned Node.js LTS and pnpm stable versions in `mise.toml`.
+- Activate mise in your shell, or prefix commands with `mise exec --` (for example, `mise exec -- pnpm install --frozen-lockfile`). Keep the pnpm version in `mise.toml` and the `packageManager` field in `package.json` in sync.
 - Customize `yak.config.js` and choose a repo to store your content. Recommend create another repo for this.
 - Replace `favicon.icon` in `/public` folder with your own
 - Run `pnpm run dev` and go to `localhost:3000/keystatic`. Follow the step to create a Github App. Some environment variables will be generated in a `.env` file. Copy them.

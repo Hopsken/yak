@@ -4,15 +4,32 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 SECONDS=0
 
-echo 'Checking the orb Node.js toolchain'
-# Node.js and Corepack are supplied by the orb base image.
-node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 20 || (major === 20 && minor < 9)) throw new Error("Next.js requires Node.js >= 20.9")'
-node --version
+echo 'Preparing mise'
+export PATH="$HOME/.local/bin:$PATH"
+if ! command -v mise >/dev/null 2>&1; then
+  curl -fsSL https://mise.run | sh
+fi
+mise trust mise.toml
 
-echo 'Preparing the package manager pinned in package.json'
-corepack enable pnpm
-corepack prepare "$(node -p 'require("./package.json").packageManager')" --activate
+echo "Installing pinned toolchains (${SECONDS}s elapsed)"
+mise install
+eval "$(mise env -s bash)"
+node --version
 pnpm --version
+
+# Activate the complete project environment in future non-interactive login shells.
+profile_marker="# Yak orb mise environment: $PWD"
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+  cat >> "$HOME/.bash_profile" <<EOF
+
+$profile_marker
+if [[ -z "\${YAK_MISE_ACTIVE:-}" && ( "\$PWD" == "$PWD" || "\$PWD" == "$PWD/"* ) ]]; then
+  export YAK_MISE_ACTIVE=1
+  export PATH="$(dirname "$(command -v mise)"):\$PATH"
+  eval "\$(mise env -s bash)"
+fi
+EOF
+fi
 
 echo "Installing locked dependencies (${SECONDS}s elapsed)"
 CI=true pnpm install --frozen-lockfile
