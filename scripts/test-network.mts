@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { parseEnv } from 'node:util'
 import assert from 'node:assert/strict'
+import { isTid } from '@atcute/lexicons/syntax'
 
 const env = parseEnv(await readFile('.env.test-network', 'utf8'))
 const origin = env.YAK_ORIGIN!
@@ -59,6 +60,7 @@ async function write(data: unknown) {
 }
 const created = await write(input)
 assert.equal(created.status, 200, JSON.stringify(created.data))
+assert.ok(isTid(created.data.rkey), 'New document keys must be TIDs')
 const missingKey = await write({ ...input, cid: created.data.cid })
 assert.equal(missingKey.status, 400)
 assert.match(missingKey.data.error, /supplied together/)
@@ -69,6 +71,10 @@ assert.equal(saved.value.content.$type, 'at.markpub.markdown')
 assert.equal(saved.value.content.flavor, 'commonmark')
 assert.equal(saved.value.content.text.markdown, input.markdown)
 assert.equal(saved.value.path, `/notes/${slug}`)
+assert.ok(
+  isTid(saved.value.site.split('/').at(-1)),
+  'Publication keys must be TIDs'
+)
 const html = await fetch(`${origin}/notes/${slug}`).then(r => r.text())
 assert.match(html, /A <strong>real<\/strong> article/)
 assert.match(html, /rel="site.standard.document"/)
@@ -118,7 +124,7 @@ assert.equal(
   await fetch(`${origin}/.well-known/site.standard.publication`).then(r =>
     r.text()
   ),
-  `at://${env.YAK_OWNER_DID}/site.standard.publication/yak`
+  saved.value.site
 )
 assert.equal(
   (await fetch(`${origin}/notes/missing-root?note=hello`)).status,

@@ -13,8 +13,6 @@ const PDS_PORT = 2582
 const PLC_PORT = 2583
 const PDS_URL = `http://127.0.0.1:${PDS_PORT}`
 const PLC_URL = `http://127.0.0.1:${PLC_PORT}`
-const PUBLICATION_RKEY = 'yak'
-const DOCUMENT_RKEY = 'hello'
 const ORIGIN = 'http://127.0.0.1:3000'
 const ENV_PATH = resolve('.env.test-network')
 const certPath = resolve('.yak/tls/pds-cert.pem')
@@ -106,12 +104,11 @@ try {
     }
   })
   const now = new Date().toISOString()
-  await ok(
+  const publication = await ok(
     rpc.post('com.atproto.repo.createRecord', {
       input: {
         repo: owner.did,
         collection: 'site.standard.publication',
-        rkey: PUBLICATION_RKEY,
         record: {
           $type: 'site.standard.publication',
           name: 'Yak',
@@ -125,11 +122,10 @@ try {
       input: {
         repo: owner.did,
         collection: 'site.standard.document',
-        rkey: DOCUMENT_RKEY,
         record: {
           $type: 'site.standard.document',
           title: 'Hello from Yak',
-          site: `at://${owner.did}/site.standard.publication/${PUBLICATION_RKEY}`,
+          site: publication.uri,
           path: '/notes/hello',
           publishedAt: now,
           updatedAt: now,

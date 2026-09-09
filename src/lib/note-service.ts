@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
-import { listRecords, readTextBlob, settings } from './atproto'
+import { listRecords, publicClient, readTextBlob, settings } from './atproto'
+import { findPublication } from './publication'
 import { buildGraph, type Note } from './documents'
 import { z } from 'zod'
 
@@ -28,11 +29,13 @@ const snapshot = cache(async () => {
   const config = settings()
   const notes = await unstable_cache(
     async () => {
+      const publication = await findPublication(await publicClient(), config)
+      if (!publication) return []
       const records = await listRecords('site.standard.document')
       const result: Note[] = []
       for (const record of records) {
         const parsed = recordSchema.safeParse(record.value)
-        if (!parsed.success || parsed.data.site !== config.publication) continue
+        if (!parsed.success || parsed.data.site !== publication) continue
         const doc = parsed.data
         if (!doc.path?.startsWith('/notes/')) continue
         const slug = decodeURIComponent(doc.path.slice(7))
@@ -60,7 +63,7 @@ const snapshot = cache(async () => {
       }
       return result.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
     },
-    ['documents', config.publication],
+    ['documents', config.did, config.origin],
     { revalidate: 30, tags: ['documents'] }
   )()
   return buildGraph(notes, config.origin)

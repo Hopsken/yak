@@ -1,23 +1,11 @@
 import { settings, publicClient } from '@/lib/atproto'
-import { ok } from '@atcute/client'
+import { findPublication } from '@/lib/publication'
 export const dynamic = 'force-dynamic'
 export async function GET() {
-  const config = settings()
-  const record = await ok(
-    (await publicClient()).get('com.atproto.repo.getRecord', {
-      params: {
-        repo: config.did,
-        collection: 'site.standard.publication',
-        rkey: config.rkey
-      }
-    })
-  )
-  const value = record.value as { url?: string }
-  if (value.url?.replace(/\/$/, '') !== config.origin)
-    return new Response('Publication URL does not match YAK_ORIGIN', {
-      status: 409
-    })
-  return new Response(config.publication, {
+  const publication = await findPublication(await publicClient(), settings())
+  if (!publication)
+    return new Response('Publication not found', { status: 404 })
+  return new Response(publication, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
   })
 }

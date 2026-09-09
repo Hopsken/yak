@@ -11,7 +11,6 @@ import {
 export function settings() {
   const did = process.env.YAK_OWNER_DID
   const origin = process.env.YAK_ORIGIN
-  const rkey = 'yak'
   if (!did || !origin)
     throw new Error(
       'Configure YAK_OWNER_DID and YAK_ORIGIN before starting Yak.'
@@ -19,9 +18,7 @@ export function settings() {
   if (!/^did:(plc|web):/.test(did)) throw new Error('Unsupported owner DID')
   return {
     did: did as `did:plc:${string}` | `did:web:${string}`,
-    origin: new URL(origin).origin,
-    rkey,
-    publication: `at://${did}/site.standard.publication/${rkey}`
+    origin: new URL(origin).origin
   }
 }
 

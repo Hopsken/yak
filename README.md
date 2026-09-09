@@ -111,9 +111,13 @@ Copy `.env.example` and configure:
 Serve `/oauth-client-metadata.json` publicly with `token_endpoint_auth_method: none`.
 The PDS must be able to fetch this URL without a login wall.
 
-The first successful publication can create the publication record with key `yak`.
-An existing publication must already have a URL matching `YAK_ORIGIN`; Yak will
-not silently take over or rewrite a different publication.
+Yak finds the owner's publication by its URL matching `YAK_ORIGIN`. If none
+exists, publishing creates one with a PDS-assigned TID record key. Multiple
+matches cause an error; Yak does not silently select or rewrite a publication.
+New documents also receive PDS-assigned TID keys. Editing keeps the existing
+record key and checks its revision CID. Duplicate paths are checked before
+creation; simultaneous writes from separate server instances or external clients
+are not serialized, so run a single editor instance for this single-author app.
 
 Production resolves the PDS from the DID document. Development PDS/PLC overrides
 and the shortcut login are ignored/disabled in production. Origin checks protect

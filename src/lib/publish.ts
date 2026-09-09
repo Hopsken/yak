@@ -7,31 +7,42 @@ import {
 } from '@atcute/standard-site'
 import { parse } from '@atcute/lexicons'
 import { documentInput, markdownInfo } from './documents'
+import { findPublication } from './publication'
 
 export async function publish(
   client: Client,
   input: unknown,
-  config: { did: Did; origin: string; rkey: string; publication: string }
+  config: { did: Did; origin: string }
 ) {
   const data = documentInput.parse(input)
   if (!!data.rkey !== !!data.cid)
     throw new Error('Record key and revision CID must be supplied together')
-  const path = `/notes/${encodeURIComponent(data.slug)}`
-  const rkey =
-    data.rkey ??
-    Array.from(
-      new Uint8Array(
-        await crypto.subtle.digest(
-          'SHA-256',
-          new TextEncoder().encode(`${config.publication}:${path}`)
-        )
-      ),
-      byte => byte.toString(16).padStart(2, '0')
+  let publication = await findPublication(client, config)
+  if (!publication) {
+    if (data.rkey) throw new Error('Publication not found')
+    const record = {
+      $type: 'site.standard.publication' as const,
+      name: 'Yak',
+      url: config.origin
+    }
+    parse(SiteStandardPublication.mainSchema, record)
+    const created = await ok(
+      client.post('com.atproto.repo.createRecord', {
+        input: {
+          repo: config.did,
+          collection: 'site.standard.publication',
+          record
+        }
+      })
     )
-      .join('')
-      .slice(0, 32)
+    publication = await findPublication(client, config)
+    if (publication !== created.uri)
+      throw new Error('Publication changed during creation. Retry publishing.')
+  }
+  const path = `/notes/${encodeURIComponent(data.slug)}`
+  const rkey = data.rkey
   let previous: Record<string, unknown> = {}
-  if (data.rkey) {
+  if (rkey) {
     if (!data.cid) throw new Error('A revision CID is required')
     const record = await ok(
       client.get('com.atproto.repo.getRecord', {
@@ -41,7 +52,7 @@ export async function publish(
     previous = record.value as Record<string, unknown>
     if (record.cid !== data.cid)
       throw new Error('This article changed. Reload before publishing.')
-    if (previous.site !== config.publication || previous.path !== path)
+    if (previous.site !== publication || previous.path !== path)
       throw new Error('Publication and published path cannot change')
     if (
       (previous.content as { $type?: string })?.$type !== 'at.markpub.markdown'
@@ -65,7 +76,7 @@ export async function publish(
       page.records.some(record => {
         const value = record.value as { site?: string; path?: string }
         return (
-          value.site === config.publication &&
+          value.site === publication &&
           value.path === path &&
           record.uri.split('/').at(-1) !== rkey
         )
@@ -74,41 +85,6 @@ export async function publish(
       throw new Error('This path is already in use')
     cursor = page.cursor
   } while (cursor)
-  const existingPublication = await client.get('com.atproto.repo.getRecord', {
-    params: {
-      repo: config.did,
-      collection: 'site.standard.publication',
-      rkey: config.rkey
-    }
-  })
-  if (!existingPublication.ok) {
-    if (existingPublication.data.error !== 'RecordNotFound')
-      throw new Error('Unable to read publication')
-    const publication = {
-      $type: 'site.standard.publication' as const,
-      name: 'Yak',
-      url: config.origin
-    }
-    parse(SiteStandardPublication.mainSchema, publication)
-    await ok(
-      client.post('com.atproto.repo.putRecord', {
-        input: {
-          repo: config.did,
-          collection: 'site.standard.publication',
-          rkey: config.rkey,
-          swapRecord: null,
-          record: publication
-        }
-      })
-    )
-  } else if (
-    (existingPublication.data.value as { url?: string }).url?.replace(
-      /\/$/,
-      ''
-    ) !== config.origin
-  ) {
-    throw new Error('Publication URL does not match YAK_ORIGIN')
-  }
   const bytes = new TextEncoder().encode(data.markdown)
   if (bytes.length > 1_000_000)
     throw new Error('Markdown exceeds the 1 MB limit')
@@ -125,7 +101,7 @@ export async function publish(
   const record = {
     ...previous,
     $type: 'site.standard.document' as const,
-    site: config.publication,
+    site: publication,
     title: data.title,
     path,
     description: data.description,
@@ -146,15 +122,23 @@ export async function publish(
   }
   parse(SiteStandardDocument.mainSchema, record)
   const saved = await ok(
-    client.post('com.atproto.repo.putRecord', {
-      input: {
-        repo: config.did,
-        collection: 'site.standard.document',
-        rkey,
-        swapRecord: data.cid ?? null,
-        record
-      }
-    })
+    rkey
+      ? client.post('com.atproto.repo.putRecord', {
+          input: {
+            repo: config.did,
+            collection: 'site.standard.document',
+            rkey,
+            swapRecord: data.cid,
+            record
+          }
+        })
+      : client.post('com.atproto.repo.createRecord', {
+          input: {
+            repo: config.did,
+            collection: 'site.standard.document',
+            record
+          }
+        })
   )
-  return { ...saved, slug: data.slug, rkey }
+  return { ...saved, slug: data.slug, rkey: saved.uri.split('/').at(-1)! }
 }

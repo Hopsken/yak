@@ -73,7 +73,9 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     'Browser integration'
   )
   await page.getByRole('button', { name: 'Preview', exact: true }).click()
-  await expect(page.getByText('Article preview', { exact: true })).toBeVisible()
+  await expect(
+    page.getByLabel('Article preview', { exact: true })
+  ).toContainText('Browser draft survives a reload.')
   await page.getByRole('button', { name: 'Publish', exact: true }).click()
   await expect(page).toHaveURL(`${origin}/admin/edit?slug=${slug}`)
   const refreshedCookie = (await cookies()).find(
