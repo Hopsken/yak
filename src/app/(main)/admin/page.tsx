@@ -53,13 +53,13 @@ export default async function AdminPage() {
       <ul className='divide-y'>
         {notes.map(({ entry }) => (
           <li key={entry.uri} className='flex justify-between gap-4 py-4'>
-            <Link href={`/notes/${encodeURIComponent(entry.slug)}`}>
+            <Link href={`/r/${encodeURIComponent(entry.rkey)}`}>
               {entry.title}
             </Link>
             {entry.supported ? (
               <Link
                 className='underline'
-                href={`/admin/edit?slug=${encodeURIComponent(entry.slug)}`}
+                href={`/admin/edit?rkey=${encodeURIComponent(entry.rkey)}`}
               >
                 Edit
               </Link>

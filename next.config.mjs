@@ -3,7 +3,7 @@ const nextConfig = {
   allowedDevOrigins: process.env.YAK_ORIGIN
     ? [new URL(process.env.YAK_ORIGIN).hostname]
     : [],
-  serverExternalPackages: ['@atcute/oauth-node-client']
+  serverExternalPackages: ['@atcute/oauth-node-client', '@atcute/tid']
 }
 
 export default nextConfig

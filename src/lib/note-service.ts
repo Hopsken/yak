@@ -37,9 +37,8 @@ const snapshot = cache(async () => {
         const parsed = recordSchema.safeParse(record.value)
         if (!parsed.success || parsed.data.site !== publication) continue
         const doc = parsed.data
-        if (!doc.path?.startsWith('/notes/')) continue
-        const slug = decodeURIComponent(doc.path.slice(7))
-        if (!slug || slug.includes('/')) continue
+        const slug = record.uri.split('/').at(-1)!
+        if (doc.path !== `/r/${slug}`) continue
         const body = markpubSchema.safeParse(doc.content)
         const markdown = body.success
           ? body.data.text.textBlob

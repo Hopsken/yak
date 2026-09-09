@@ -47,7 +47,7 @@ describe('derived links', () => {
       [
         note(
           'a',
-          '[B](/notes/b) [again][b]\n\n[b]: /notes/b\n\n`[no](/notes/c)`\n\n[external](https://elsewhere.test/notes/c)'
+          '[B](/r/b) [again][b]\n\n[b]: /r/b\n\n`[no](/r/c)`\n\n[external](https://elsewhere.test/r/c)\n\n[old](/notes/c)'
         ),
         note('b'),
         note('c')

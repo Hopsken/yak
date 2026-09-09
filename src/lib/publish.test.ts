@@ -1,4 +1,5 @@
 import { Client } from '@atcute/client'
+import { isTid } from '@atcute/lexicons/syntax'
 import { describe, expect, it } from 'vitest'
 import { publish } from './publish'
 import { findPublication } from './publication'
@@ -11,69 +12,68 @@ const config = {
 }
 const draft = {
   title: 'Test article',
-  slug: 'hello-world',
   markdown: '**Hello**'
 }
 
 describe('portable publishing', () => {
-  it.each([
-    ['hello-world', '869ef3b8d6da8018914347ded4e1b135'],
-    ['中文笔记', '2b0d31a3fb2274a2cb73b58052e90dd0']
-  ])('preserves the existing record key for %s', async (slug, rkey) => {
-    let written: Record<string, unknown> | undefined
-    const client = new Client({
-      handler: async (path, init) => {
-        if (path.includes('collection=site.standard.publication'))
-          return Response.json({
-            records: [
-              { uri: config.publication, value: { url: config.origin } }
-            ]
-          })
-        if (path.startsWith('/xrpc/com.atproto.repo.listRecords'))
-          return Response.json({ records: [] })
-        if (path.startsWith('/xrpc/com.atproto.repo.getRecord'))
-          return Response.json({
-            cid: 'previous-cid',
-            value: {
-              site: config.publication,
-              path: `/notes/${encodeURIComponent(slug)}`,
-              tags: ['Old'],
-              content: { $type: 'at.markpub.markdown' }
-            }
-          })
-        if (path === '/xrpc/com.atproto.repo.putRecord') {
-          written = JSON.parse(init.body as string)
-          return Response.json({
-            uri: `at://${config.did}/site.standard.document/${rkey}`,
-            cid: 'saved-cid'
-          })
+  it.each(['3mf6xbr3f2222', '3mf6xbr3f2223'])(
+    'preserves the existing record key %s',
+    async rkey => {
+      let written: Record<string, unknown> | undefined
+      const client = new Client({
+        handler: async (path, init) => {
+          if (path.includes('collection=site.standard.publication'))
+            return Response.json({
+              records: [
+                { uri: config.publication, value: { url: config.origin } }
+              ]
+            })
+          if (path.startsWith('/xrpc/com.atproto.repo.listRecords'))
+            return Response.json({ records: [] })
+          if (path.startsWith('/xrpc/com.atproto.repo.getRecord'))
+            return Response.json({
+              cid: 'previous-cid',
+              value: {
+                site: config.publication,
+                path: `/r/${rkey}`,
+                tags: ['Old'],
+                content: { $type: 'at.markpub.markdown' }
+              }
+            })
+          if (path === '/xrpc/com.atproto.repo.putRecord') {
+            written = JSON.parse(init.body as string)
+            return Response.json({
+              uri: `at://${config.did}/site.standard.document/${rkey}`,
+              cid: 'saved-cid'
+            })
+          }
+          throw new Error(`Unexpected request: ${path}`)
         }
-        throw new Error(`Unexpected request: ${path}`)
-      }
-    })
-    const result = await publish(
-      client,
-      { ...draft, slug, rkey, cid: 'previous-cid' },
-      config
-    )
-    expect(result.rkey).toBe(rkey)
-    expect(written).toMatchObject({
-      repo: config.did,
-      rkey,
-      swapRecord: 'previous-cid',
-      record: {
-        site: config.publication,
-        path: `/notes/${encodeURIComponent(slug)}`,
-        tags: [],
-        textContent: 'Hello',
-        content: {
-          $type: 'at.markpub.markdown',
-          flavor: 'commonmark',
-          text: { markdown: '**Hello**' }
+      })
+      const result = await publish(
+        client,
+        { ...draft, rkey, cid: 'previous-cid' },
+        config
+      )
+      expect(result.rkey).toBe(rkey)
+      expect(written).toMatchObject({
+        repo: config.did,
+        rkey,
+        swapRecord: 'previous-cid',
+        record: {
+          site: config.publication,
+          path: `/r/${rkey}`,
+          tags: [],
+          textContent: 'Hello',
+          content: {
+            $type: 'at.markpub.markdown',
+            flavor: 'commonmark',
+            text: { markdown: '**Hello**' }
+          }
         }
-      }
-    })
-  })
+      })
+    }
+  )
 
   it('rejects a stale CID before writing through the server client', async () => {
     const calls: string[] = []
@@ -116,7 +116,7 @@ describe('portable publishing', () => {
           return Response.json({ uri, cid: 'publication-cid' })
         }
         return Response.json({
-          uri: `at://${config.did}/site.standard.document/3mf6xbr3f2223`,
+          uri: `at://${config.did}/site.standard.document/${input.rkey}`,
           cid: 'document-cid'
         })
       }
@@ -130,17 +130,17 @@ describe('portable publishing', () => {
       },
       config
     )
-    expect(result.rkey).toBe('3mf6xbr3f2223')
+    expect(isTid(result.rkey)).toBe(true)
     expect(writes).toHaveLength(2)
     expect(writes[0]).toMatchObject({
       collection: 'site.standard.publication',
       record: { url: config.origin }
     })
     expect(writes[0]).not.toHaveProperty('rkey')
-    expect(writes[1]).not.toHaveProperty('rkey')
     expect(writes[1]).toMatchObject({
       collection: 'site.standard.document',
-      record: { site: uri, tags: ['中文', 'React'] }
+      rkey: result.rkey,
+      record: { site: uri, path: `/r/${result.rkey}`, tags: ['中文', 'React'] }
     })
   })
 

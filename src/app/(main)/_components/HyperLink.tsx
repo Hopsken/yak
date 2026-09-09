@@ -21,11 +21,11 @@ export function HyperLink({ from, href, children }: Props) {
   const scrollTo = useScrollTo()
   const isMobile = useIsMobile()
 
-  const isNoteLink = useMemo(() => href.startsWith('/notes'), [href])
+  const isNoteLink = useMemo(() => href.startsWith('/r/'), [href])
   const isExternal = useMemo(() => isExternalLink(href), [href])
 
   const target = useMemo(() => {
-    if (href.startsWith('/notes')) {
+    if (href.startsWith('/r/')) {
       const target = href.split('/')[2]
       return target
     }

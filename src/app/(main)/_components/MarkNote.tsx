@@ -11,10 +11,7 @@ export function MarkNote({ slug, entry }: { slug: string; entry: Note }) {
         a: ({ href = '', children }) => {
           let target = href
           try {
-            const url = new URL(
-              href,
-              origin + '/notes/' + encodeURIComponent(slug)
-            )
+            const url = new URL(href, origin + '/r/' + encodeURIComponent(slug))
             if (url.origin === origin)
               target = url.pathname + url.search + url.hash
           } catch {

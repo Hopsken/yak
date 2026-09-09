@@ -11,15 +11,15 @@ import { settings } from '@/lib/atproto'
 export async function generateMetadata({
   params
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ rkey: string }>
 }) {
-  const note = await NoteService.instance.getNoteBySlug((await params).slug)
+  const note = await NoteService.instance.getNoteBySlug((await params).rkey)
   return note
     ? {
         title: note.title,
         description: note.description,
         alternates: {
-          canonical: `${settings().origin}/notes/${encodeURIComponent(note.slug)}`
+          canonical: `${settings().origin}/r/${encodeURIComponent(note.rkey)}`
         }
       }
     : {}
@@ -29,10 +29,10 @@ export default async function NotePage({
   params,
   searchParams
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ rkey: string }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { slug: rootNote } = await params
+  const { rkey: rootNote } = await params
   const { note: leafNotes = [] } = await searchParams
 
   const noteService = NoteService.instance

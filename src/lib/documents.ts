@@ -6,7 +6,6 @@ import { toString } from 'mdast-util-to-string'
 
 export const documentInput = z.object({
   title: z.string().trim().min(1).max(500),
-  slug: z.string().regex(/^[\p{L}\p{N}][\p{L}\p{N}_-]*$/u),
   description: z.string().max(3000).default(''),
   markdown: z.string().max(900_000),
   rkey: z
@@ -81,11 +80,11 @@ export function buildGraph(notes: Note[], origin: string) {
       try {
         const url = new URL(
           href,
-          origin + '/notes/' + encodeURIComponent(note.slug)
+          origin + '/r/' + encodeURIComponent(note.slug)
         )
         if (url.origin !== new URL(origin).origin) continue
-        if (url.pathname.startsWith('/notes/')) {
-          targets.add(decodeURIComponent(url.pathname.slice(7)))
+        if (url.pathname.startsWith('/r/')) {
+          targets.add(decodeURIComponent(url.pathname.slice(3)))
         } else if (url.pathname.startsWith('/topics/')) {
           const key = topicKey(decodeURIComponent(url.pathname.slice(8)))
           const topic = topics.get(key) ?? { title: key, backlinks: [] }

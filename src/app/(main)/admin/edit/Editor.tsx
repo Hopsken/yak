@@ -80,13 +80,9 @@ export function Editor({
       const saved = localStorage.getItem(key)
       if (!saved) return setMessage('No local draft found.')
       const data = documentInput
-        .extend({ title: z.string(), slug: z.string() })
+        .extend({ title: z.string() })
         .parse(JSON.parse(saved))
-      if (
-        data.rkey !== initial.rkey ||
-        (initial.rkey && data.slug !== initial.slug)
-      )
-        throw new Error('Wrong draft')
+      if (data.rkey !== initial.rkey) throw new Error('Wrong draft')
       dirty.current = true
       setDraft(data)
       editor?.commands.setContent(data.markdown, {
@@ -108,7 +104,7 @@ export function Editor({
     )
     const link = document.createElement('a')
     link.href = url
-    link.download = `${draft.slug || 'draft'}.md`
+    link.download = `${draft.rkey || 'draft'}.md`
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -134,7 +130,7 @@ export function Editor({
       setMessage('Published. Your article is now on the blog.')
       // A new route/key prevents a published article from reusing the new-draft slot.
       if (!initial.rkey)
-        router.replace(`/admin/edit?slug=${encodeURIComponent(result.slug)}`)
+        router.replace(`/admin/edit?rkey=${encodeURIComponent(result.rkey)}`)
       router.refresh()
     } catch (error) {
       setMessage(
@@ -171,15 +167,6 @@ export function Editor({
             value={draft.title}
             onChange={e => change({ title: e.target.value })}
             className='mt-1 block w-full rounded border bg-transparent p-2 text-xl'
-          />
-        </label>
-        <label className='block'>
-          Path: /notes/
-          <input
-            value={draft.slug}
-            readOnly={!!draft.rkey}
-            onChange={e => change({ slug: e.target.value })}
-            className='mt-1 block w-full rounded border bg-transparent p-2'
           />
         </label>
         <label className='block'>
@@ -263,7 +250,7 @@ export function Editor({
                       {
                         type: 'link',
                         attrs: {
-                          href: `${origin}/notes/${encodeURIComponent(note.slug)}`
+                          href: `${origin}/r/${encodeURIComponent(note.slug)}`
                         }
                       }
                     ]
@@ -335,7 +322,7 @@ export function Editor({
           {draft.rkey && (
             <Link
               className={button}
-              href={`/notes/${encodeURIComponent(draft.slug)}`}
+              href={`/r/${encodeURIComponent(draft.rkey)}`}
             >
               View article
             </Link>

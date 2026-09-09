@@ -7,7 +7,7 @@ import { Editor } from './Editor'
 export default async function EditPage({
   searchParams
 }: {
-  searchParams: Promise<{ slug?: string }>
+  searchParams: Promise<{ rkey?: string }>
 }) {
   const session = await appSession()
   if (
@@ -15,9 +15,9 @@ export default async function EditPage({
     !(session.mode === 'oauth' || (session.mode === 'dev' && devLoginEnabled()))
   )
     redirect('/admin')
-  const { slug } = await searchParams
-  const note = slug ? await NoteService.instance.getNoteBySlug(slug) : null
-  if (slug && (!note || !note.supported)) notFound()
+  const { rkey } = await searchParams
+  const note = rkey ? await NoteService.instance.getNoteBySlug(rkey) : null
+  if (rkey && (!note || !note.supported)) notFound()
   const notes = await NoteService.instance.listNotes()
   return (
     <Editor
@@ -26,13 +26,12 @@ export default async function EditPage({
         note
           ? {
               title: note.title,
-              slug: note.slug,
               description: note.description,
               markdown: note.markdown,
               rkey: note.rkey,
               cid: note.cid
             }
-          : { title: '', slug: '', description: '', markdown: '' }
+          : { title: '', description: '', markdown: '' }
       }
       owner={settings().did}
       origin={settings().origin}

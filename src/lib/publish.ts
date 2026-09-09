@@ -6,6 +6,7 @@ import {
   SiteStandardPublication
 } from '@atcute/standard-site'
 import { parse } from '@atcute/lexicons'
+import * as TID from '@atcute/tid'
 import { documentInput, markdownInfo } from './documents'
 import { findPublication } from './publication'
 
@@ -42,10 +43,10 @@ export async function publish(
     if (publication !== created.uri)
       throw new Error('Publication changed during creation. Retry publishing.')
   }
-  const path = `/notes/${encodeURIComponent(data.slug)}`
-  const rkey = data.rkey
+  const rkey = data.rkey ?? TID.now()
+  const path = `/r/${rkey}`
   let previous: Record<string, unknown> = {}
-  if (rkey) {
+  if (data.rkey) {
     if (!data.cid) throw new Error('A revision CID is required')
     const record = await ok(
       client.get('com.atproto.repo.getRecord', {
@@ -62,32 +63,6 @@ export async function publish(
     )
       throw new Error('This article uses an unsupported format')
   }
-  // Refuse duplicate paths, including records created by another client.
-  let cursor: string | undefined
-  do {
-    const page = await ok(
-      client.get('com.atproto.repo.listRecords', {
-        params: {
-          repo: config.did,
-          collection: 'site.standard.document',
-          limit: 100,
-          cursor
-        }
-      })
-    )
-    if (
-      page.records.some(record => {
-        const value = record.value as { site?: string; path?: string }
-        return (
-          value.site === publication &&
-          value.path === path &&
-          record.uri.split('/').at(-1) !== rkey
-        )
-      })
-    )
-      throw new Error('This path is already in use')
-    cursor = page.cursor
-  } while (cursor)
   const bytes = new TextEncoder().encode(data.markdown)
   if (bytes.length > 1_000_000)
     throw new Error('Markdown exceeds the 1 MB limit')
@@ -125,7 +100,7 @@ export async function publish(
   }
   parse(SiteStandardDocument.mainSchema, record)
   const saved = await ok(
-    rkey
+    data.rkey
       ? client.post('com.atproto.repo.putRecord', {
           input: {
             repo: config.did,
@@ -139,9 +114,10 @@ export async function publish(
           input: {
             repo: config.did,
             collection: 'site.standard.document',
+            rkey,
             record
           }
         })
   )
-  return { ...saved, slug: data.slug, rkey: saved.uri.split('/').at(-1)! }
+  return { ...saved, rkey }
 }

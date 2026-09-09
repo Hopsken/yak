@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { sealData, unsealData } from 'iron-session'
 import type { StoredSession } from '@atcute/oauth-node-client'
+import { isTid } from '@atcute/lexicons/syntax'
 
 const env = parseEnv(readFileSync('.env.test-network', 'utf8'))
 const origin = env.YAK_ORIGIN!
@@ -18,7 +19,16 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     context.addCookies([
       { name, value, url: origin, httpOnly: true, sameSite: 'Lax' }
     ])
-  await page.goto(`${origin}/admin`)
+  await page.goto(origin)
+  await expect(page).toHaveURL(`${origin}/`)
+  await expect(page.getByRole('heading', { name: 'All notes' })).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: '~ls', exact: true })
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('link', { name: 'Hello from Yak', exact: true })
+  ).toHaveAttribute('href', `/r/${env.YAK_SEED_RKEY}`)
+  await page.getByRole('link', { name: 'Write', exact: true }).click()
   const metadata = await (
     await context.request.get(`${origin}/oauth-client-metadata.json`)
   ).json()
@@ -59,12 +69,11 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
   await page.getByRole('link', { name: 'New article' }).click()
   const body = page.getByRole('textbox', { name: 'Article body' })
   await expect(body).toBeVisible()
-  const slug = `browser-${Date.now()}`
+  await expect(page.getByLabel(/Path|slug/i)).toHaveCount(0)
   await page.getByLabel('Title', { exact: true }).fill('Browser integration')
-  await page.getByLabel('Path: /notes/').fill(slug)
   await body.fill('Browser draft survives a reload. #React #中文 #react ')
   await expect(page.getByLabel(/Tags/i)).toHaveCount(0)
-  await page.getByLabel('Insert article link').selectOption('hello')
+  await page.getByLabel('Insert article link').selectOption(env.YAK_SEED_RKEY!)
   await page.reload()
   await expect(body).toBeVisible()
   await page.getByRole('button', { name: 'Restore draft' }).click()
@@ -78,7 +87,10 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     page.getByLabel('Article preview', { exact: true })
   ).toContainText('Browser draft survives a reload.')
   await page.getByRole('button', { name: 'Publish', exact: true }).click()
-  await expect(page).toHaveURL(`${origin}/admin/edit?slug=${slug}`)
+  await page.waitForURL(`${origin}/admin/edit?rkey=*`)
+  const rkey = new URL(page.url()).searchParams.get('rkey')
+  expect(rkey).not.toBeNull()
+  expect(isTid(rkey!)).toBe(true)
   const refreshedCookie = (await cookies()).find(
     c => c.name === 'yak-oauth-session'
   )!
@@ -92,19 +104,19 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
       stored.value.tokenSet.refresh_token
   ).toBe(true)
   await page.getByRole('link', { name: 'View article' }).click()
-  await expect(page).toHaveURL(`${origin}/notes/${slug}`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}`)
   await expect(
     page.getByText('Browser draft survives a reload.', { exact: false })
   ).toBeVisible()
   await page.getByRole('link', { name: 'Hello from Yak', exact: true }).click()
-  await expect(page).toHaveURL(`${origin}/notes/${slug}?note=hello`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}?note=${env.YAK_SEED_RKEY}`)
   await expect(
     page.getByText('Linked to this note', { exact: true })
   ).toBeVisible()
   await page.goBack()
-  await expect(page).toHaveURL(`${origin}/notes/${slug}`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}`)
   await page.goForward()
-  await expect(page).toHaveURL(`${origin}/notes/${slug}?note=hello`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}?note=${env.YAK_SEED_RKEY}`)
   await page.goto(`${origin}/admin`)
   await page.getByRole('button', { name: 'Log out' }).click()
   await expect(

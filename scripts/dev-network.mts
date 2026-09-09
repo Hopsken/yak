@@ -7,6 +7,7 @@ import httpProxy from 'http-proxy'
 import { dirname, resolve } from 'node:path'
 import { Client, ok, simpleFetchHandler } from '@atcute/client'
 import type {} from '@atcute/atproto'
+import { now as tidNow } from '@atcute/tid'
 import { TestNetworkNoAppView } from '@atproto/dev-env'
 
 const PDS_PORT = 2582
@@ -117,16 +118,18 @@ try {
       }
     })
   )
+  const seedRkey = tidNow()
   await ok(
     rpc.post('com.atproto.repo.createRecord', {
       input: {
         repo: owner.did,
         collection: 'site.standard.document',
+        rkey: seedRkey,
         record: {
           $type: 'site.standard.document',
           title: 'Hello from Yak',
           site: publication.uri,
-          path: '/notes/hello',
+          path: `/r/${seedRkey}`,
           publishedAt: now,
           updatedAt: now,
           tags: ['React'],
@@ -150,6 +153,7 @@ try {
     `YAK_PDS_URL=${PDS_URL}`,
     `YAK_PLC_URL=${PLC_URL}`,
     `YAK_ORIGIN=${ORIGIN}`,
+    `YAK_SEED_RKEY=${seedRkey}`,
     'YAK_DEV_LOGIN=yak-owner.test',
     `YAK_DEV_PASSWORD=${password}`,
     `YAK_SESSION_SECRET=${sessionSecret}`,

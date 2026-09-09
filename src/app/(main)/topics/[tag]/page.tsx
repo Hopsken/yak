@@ -18,7 +18,7 @@ export default async function TopicPage({
           <li key={note.slug}>
             <Link
               className='text-blue-600 underline'
-              href={`/notes/${encodeURIComponent(note.slug)}`}
+              href={`/r/${encodeURIComponent(note.slug)}`}
             >
               {note.title}
             </Link>

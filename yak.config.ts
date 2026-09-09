@@ -22,10 +22,6 @@ const config: Config = {
   },
   links: [
     {
-      href: '/notes',
-      text: '~ls'
-    },
-    {
       href: '/admin',
       text: 'Write'
     }

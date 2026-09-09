@@ -25,7 +25,7 @@ export function Backlinks({ currentNote, backlinks }: Props) {
           >
             <HiArrowDownLeft className='stroke-1' />
             <span className='underline'>
-              <HyperLink href={`/notes/${slug}`} from={currentNote}>
+              <HyperLink href={`/r/${slug}`} from={currentNote}>
                 {title}
               </HyperLink>
             </span>

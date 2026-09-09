@@ -42,12 +42,10 @@ assert.equal(login.status, 303)
 assert.equal(login.headers.get('location'), `${origin}/admin`)
 const cookie = login.headers.get('set-cookie')!.split(';')[0]!
 assert.match(cookie, /^yak-session=/)
-const slug = `integration-${Date.now()}`
 const input = {
   title: 'Integration article',
-  slug,
   description: 'PDS round trip',
-  markdown: 'A **real** article. #React\n\n[Hello](/notes/hello)'
+  markdown: `A **real** article. #React\n\n[Hello](/r/${env.YAK_SEED_RKEY})`
 }
 async function write(data: unknown) {
   const response = await fetch(`${origin}/api/documents`, {
@@ -60,6 +58,14 @@ async function write(data: unknown) {
 const created = await write(input)
 assert.equal(created.status, 200, JSON.stringify(created.data))
 assert.ok(isTid(created.data.rkey), 'New document keys must be TIDs')
+const repeated = await write(input)
+assert.equal(repeated.status, 200, JSON.stringify(repeated.data))
+assert.ok(isTid(repeated.data.rkey), 'Repeated create keys must be TIDs')
+assert.notEqual(
+  repeated.data.rkey,
+  created.data.rkey,
+  'Same-title creates must receive distinct keys'
+)
 const missingKey = await write({ ...input, cid: created.data.cid })
 assert.equal(missingKey.status, 400)
 assert.match(missingKey.data.error, /supplied together/)
@@ -70,24 +76,27 @@ assert.equal(saved.value.content.$type, 'at.markpub.markdown')
 assert.equal(saved.value.content.flavor, 'commonmark')
 assert.equal(saved.value.content.text.markdown, input.markdown)
 assert.deepEqual(saved.value.tags, ['React'])
-assert.equal(saved.value.path, `/notes/${slug}`)
+assert.equal(saved.value.path, `/r/${created.data.rkey}`)
+const repeatedSaved = await fetch(
+  `${env.YAK_PDS_URL}/xrpc/com.atproto.repo.getRecord?repo=${env.YAK_OWNER_DID}&collection=site.standard.document&rkey=${repeated.data.rkey}`
+).then(r => r.json())
+assert.equal(repeatedSaved.value.path, `/r/${repeated.data.rkey}`)
+assert.notEqual(repeatedSaved.value.path, saved.value.path)
 assert.ok(
   isTid(saved.value.site.split('/').at(-1)),
   'Publication keys must be TIDs'
 )
-const html = await fetch(`${origin}/notes/${slug}`).then(r => r.text())
+const html = await fetch(`${origin}/r/${created.data.rkey}`).then(r => r.text())
 assert.match(html, /A <strong>real<\/strong> article/)
 assert.match(html, /rel="site.standard.document"/)
 assert.match(
-  await fetch(`${origin}/notes/hello`).then(r => r.text()),
+  await fetch(`${origin}/r/${env.YAK_SEED_RKEY}`).then(r => r.text()),
   /Integration article/
 )
 assert.match(
   await fetch(`${origin}/topics/react`).then(r => r.text()),
   /Integration article/
 )
-const duplicate = await write(input)
-assert.equal(duplicate.status, 400)
 const changed = {
   ...input,
   rkey: created.data.rkey,
@@ -96,15 +105,14 @@ const changed = {
 }
 const updated = await write(changed)
 assert.equal(updated.status, 200, JSON.stringify(updated.data))
+assert.equal(updated.data.rkey, created.data.rkey)
+const updatedSaved = await fetch(
+  `${env.YAK_PDS_URL}/xrpc/com.atproto.repo.getRecord?repo=${env.YAK_OWNER_DID}&collection=site.standard.document&rkey=${created.data.rkey}`
+).then(r => r.json())
+assert.equal(updatedSaved.value.path, saved.value.path)
 const stale = await write(changed)
 assert.equal(stale.status, 400)
 assert.match(stale.data.error, /changed/)
-const renamed = await write({
-  ...changed,
-  cid: updated.data.cid,
-  slug: 'changed-path'
-})
-assert.equal(renamed.status, 400)
 const large = await write({
   ...changed,
   cid: updated.data.cid,
@@ -116,7 +124,7 @@ const blobRecord = await fetch(
 ).then(r => r.json())
 assert.ok(blobRecord.value.content.text.textBlob)
 assert.match(
-  await fetch(`${origin}/notes/${slug}`).then(r => r.text()),
+  await fetch(`${origin}/r/${created.data.rkey}`).then(r => r.text()),
   /Large body/
 )
 assert.equal(
@@ -126,9 +134,10 @@ assert.equal(
   saved.value.site
 )
 assert.equal(
-  (await fetch(`${origin}/notes/missing-root?note=hello`)).status,
+  (await fetch(`${origin}/r/missing-root?note=${env.YAK_SEED_RKEY}`)).status,
   404
 )
+assert.equal((await fetch(`${origin}/notes/${created.data.rkey}`)).status, 404)
 const forged = await fetch(`${origin}/api/documents`, {
   method: 'POST',
   headers: { ...headers, Cookie: `yak-session=${env.YAK_OWNER_DID}` },
@@ -136,5 +145,5 @@ const forged = await fetch(`${origin}/api/documents`, {
 })
 assert.equal(forged.status, 400)
 console.log(
-  'PASS: keyless local dev login, origin checks, forged/absent sessions, create/read/SSR, topics/backlinks, duplicate/CID/path checks, large body blob, publication verification, root 404'
+  'PASS: keyless local dev login, origin checks, forged/absent sessions, distinct TID creates, /r SSR, topics/backlinks, CID/path preservation, stale CID rejection, large body blob, publication verification, no /notes compatibility'
 )
