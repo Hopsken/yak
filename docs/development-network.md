@@ -77,23 +77,30 @@ by the disposable PDS proxy, not by Yak's production session storage.
 
 ## Amp orbs
 
-Run long-lived processes as supervised services:
+Run the local test network and app as supervised services:
 
 ```sh
 amp orb service start yak-network --command 'pnpm dev:network'
 # Wait for its ready log, then merge .env.test-network as above.
 amp orb service start yak \
   --command 'NODE_EXTRA_CA_CERTS=.yak/tls/pds-cert.pem pnpm dev --hostname 0.0.0.0' \
-  --port 3000 --portal
+  --port 3000
 ```
 
-Set `YAK_DEV_ORIGIN` to the exact returned portal origin for development access.
-It also adds that hostname to Next's dev-origin allowlist. Restart the app after
-changing it. Next 16.3 needs the HMR/debug WebSocket to connect for development
-hydration, so do not omit this allowlist configuration.
+Preview and tests use separate app processes and configuration. Keep the test
+app's `YAK_ORIGIN` at `http://127.0.0.1:3000`. For a portal preview, use a separate
+checkout with its own development env file and port, start its supervised service
+with `--portal`, then set its `YAK_ORIGIN` to the returned portal origin and
+restart that service. Do not change the test app's configuration for preview.
+
+Each app accepts mutating requests only from its own `YAK_ORIGIN`. Next.js also
+uses that hostname for its development-server origin allowlist; this does not
+grant any additional origins access to the application API. A preview publication
+must match the preview's origin, independently of the local test publication.
 
 A remote browser cannot use the orb's loopback OAuth callback. Use the shortcut
-login for portal previews and the orb's browser for local OAuth tests. An Amp
+login with disposable PDS credentials for portal previews and the orb's browser
+for local OAuth tests. An Amp
 portal behind a login wall is not a publicly discoverable OAuth metadata host.
 
 No Jetstream or Relay is started: Yak reads the selected owner's PDS directly.

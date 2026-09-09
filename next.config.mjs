@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: [
-    '127.0.0.1',
-    ...(process.env.YAK_DEV_ORIGIN
-      ? [new URL(process.env.YAK_DEV_ORIGIN).hostname]
-      : [])
-  ],
+  allowedDevOrigins: process.env.YAK_ORIGIN
+    ? [new URL(process.env.YAK_ORIGIN).hostname]
+    : [],
   serverExternalPackages: ['@atcute/oauth-node-client']
 }
 

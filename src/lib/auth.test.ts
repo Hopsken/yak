@@ -29,26 +29,39 @@ describe('development authentication boundary', () => {
     vi.stubEnv('YAK_DEV_PASSWORD', '')
     expect(devLoginEnabled()).toBe(false)
   })
-  it('rejects missing and cross-site origins', () => {
-    environment()
-    expect(() =>
-      assertOrigin(new Request('https://yak.test/api/documents'))
-    ).toThrow()
-    expect(() =>
-      assertOrigin(
-        new Request('https://yak.test/api/documents', {
-          headers: { Origin: 'https://evil.test' }
-        })
-      )
-    ).toThrow()
-    expect(() =>
-      assertOrigin(
-        new Request('https://yak.test/api/documents', {
-          headers: { Origin: 'https://yak.test' }
-        })
-      )
-    ).not.toThrow()
-  })
+  it.each(['development', 'production'])(
+    'accepts only YAK_ORIGIN in %s',
+    mode => {
+      environment()
+      vi.stubEnv('NODE_ENV', mode)
+      // Old configuration must not grant a second origin access.
+      vi.stubEnv('YAK_DEV_ORIGIN', 'https://preview.test')
+      expect(() =>
+        assertOrigin(
+          new Request('https://yak.test/api/documents', {
+            headers: { Origin: 'https://preview.test' }
+          })
+        )
+      ).toThrow('Invalid request origin')
+      expect(() =>
+        assertOrigin(new Request('https://yak.test/api/documents'))
+      ).toThrow()
+      expect(() =>
+        assertOrigin(
+          new Request('https://yak.test/api/documents', {
+            headers: { Origin: 'https://evil.test' }
+          })
+        )
+      ).toThrow()
+      expect(() =>
+        assertOrigin(
+          new Request('https://yak.test/api/documents', {
+            headers: { Origin: 'https://yak.test' }
+          })
+        )
+      ).not.toThrow()
+    }
+  )
 })
 
 it('uses public OAuth metadata on production HTTPS without a client key', async () => {

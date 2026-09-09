@@ -101,10 +101,7 @@ export function devLoginEnabled() {
 }
 
 export function assertOrigin(request: Request) {
-  const allowed = [settings().origin]
-  if (process.env.NODE_ENV === 'development' && process.env.YAK_DEV_ORIGIN)
-    allowed.push(new URL(process.env.YAK_DEV_ORIGIN).origin)
-  if (!allowed.includes(request.headers.get('origin') ?? ''))
+  if (request.headers.get('origin') !== settings().origin)
     throw new Error('Invalid request origin')
 }
 
