@@ -1,15 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  rewrites: async () => {
-    return {
-      fallback: [
-        {
-          source: '/:path*',
-          destination: '/notes/home'
-        }
-      ]
-    }
-  }
+  allowedDevOrigins: [
+    '127.0.0.1',
+    ...(process.env.YAK_DEV_ORIGIN
+      ? [new URL(process.env.YAK_DEV_ORIGIN).hostname]
+      : [])
+  ],
+  serverExternalPackages: ['@atcute/oauth-node-client']
 }
 
 export default nextConfig

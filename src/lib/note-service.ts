@@ -1,119 +1,83 @@
-import { AnyNote } from '@/type'
-import { createReader } from './keystatic/reader'
-import { matchLinks } from '@/app/(main)/_helper/note'
-import { lower } from '@/utils/lower'
+import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
+import { listRecords, readTextBlob, settings } from './atproto'
+import { buildGraph, type Note } from './documents'
+import { z } from 'zod'
 
-type NoteMeta = {
-  title: string
-  slug: string
-  backlinks: string[]
-}
+const recordSchema = z.object({
+  $type: z.literal('site.standard.document'),
+  title: z.string(),
+  site: z.string(),
+  path: z.string().optional(),
+  description: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  publishedAt: z.string(),
+  updatedAt: z.string().optional(),
+  textContent: z.string().optional(),
+  content: z.unknown().optional()
+})
+const markpubSchema = z.object({
+  $type: z.literal('at.markpub.markdown'),
+  text: z.object({
+    markdown: z.string(),
+    textBlob: z.object({ ref: z.object({ $link: z.string() }) }).optional()
+  })
+})
+
+const snapshot = cache(async () => {
+  const config = settings()
+  const notes = await unstable_cache(
+    async () => {
+      const records = await listRecords('site.standard.document')
+      const result: Note[] = []
+      for (const record of records) {
+        const parsed = recordSchema.safeParse(record.value)
+        if (!parsed.success || parsed.data.site !== config.publication) continue
+        const doc = parsed.data
+        if (!doc.path?.startsWith('/notes/')) continue
+        const slug = decodeURIComponent(doc.path.slice(7))
+        if (!slug || slug.includes('/')) continue
+        const body = markpubSchema.safeParse(doc.content)
+        const markdown = body.success
+          ? body.data.text.textBlob
+            ? await readTextBlob(body.data.text.textBlob.ref.$link)
+            : body.data.text.markdown
+          : (doc.textContent ?? '')
+        result.push({
+          title: doc.title,
+          slug,
+          uri: record.uri,
+          cid: record.cid,
+          rkey: record.uri.split('/').at(-1)!,
+          description: doc.description ?? '',
+          tags: doc.tags ?? [],
+          markdown,
+          supported: body.success,
+          publishedAt: doc.publishedAt,
+          updatedAt: doc.updatedAt,
+          backlinks: []
+        })
+      }
+      return result.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    },
+    ['documents', config.publication],
+    { revalidate: 30, tags: ['documents'] }
+  )()
+  return buildGraph(notes, config.origin)
+})
 
 export class NoteService {
-  private static _instance: NoteService | null = null
-  public static get instance() {
-    if (!this._instance) {
-      this._instance = new NoteService()
-    }
-    return this._instance
+  static readonly instance = new NoteService()
+  async getNoteBySlug(slug: string) {
+    return (await snapshot()).bySlug.get(slug) ?? null
   }
-
-  // slug => note meta
-  private _graph: Map<string, NoteMeta> | null = null
-  private reader: ReturnType<typeof createReader>
-
-  private constructor() {
-    this.reader = createReader()
-  }
-
-  private async buildGraph() {
-    if (this._graph) return this._graph
-
-    const { notes } = await this.reader.singletons.references.readOrThrow()
-
-    const graph = new Map<string, NoteMeta>()
-
-    for (const note of notes) {
-      const slug = note.slug
-      if (!slug) continue
-      graph.set(slug, {
-        ...note,
-        slug,
-        backlinks: note.backlinks.filter((i): i is string => !!i)
-      })
-    }
-
-    this._graph = graph
-    return graph
-  }
-
-  async getNoteMeta(slug: string): Promise<NoteMeta | null> {
-    const graph = await this.buildGraph()
-    return graph.get(slug) || null
-  }
-
-  async getNoteBacklinks(slug: string): Promise<NoteMeta[]> {
-    const graph = await this.buildGraph()
-    const note = graph.get(slug)
-
-    if (!note) return []
-    return note.backlinks
-      .map(slug => graph.get(slug))
-      .filter((i): i is NoteMeta => !!i)
-  }
-
-  async getNoteBySlug(slug: string): Promise<AnyNote> {
-    const [note, backlinks] = await Promise.all([
-      this.reader.collections.notes.read(slug, {
-        resolveLinkedFiles: true
-      }),
-      this.getNoteBacklinks(slug)
-    ])
-
-    // if no file exist for note, then only render the backlinks of it.
-    if (!note) {
-      const meta = await this.getNoteMeta(slug)
-      return {
-        title: meta?.title ?? '',
-        backlinks
-      }
-    }
-
-    return {
-      ...note,
-      backlinks
-    }
-  }
-
   async listNotes() {
-    return this.reader.collections.notes.all()
+    return [...(await snapshot()).bySlug.values()].map(entry => ({
+      slug: entry.slug,
+      entry
+    }))
   }
-
-  private mapTitleToSlug: Record<string, string> | null = null
-  public async getSlugByTitle() {
-    if (this.mapTitleToSlug) return this.mapTitleToSlug
-
-    const graph = await this.buildGraph()
-    const mapping: Record<string, string> = {}
-    for (const note of graph.values()) {
-      const lowered = lower(note.title)
-      mapping[lowered] = note.slug
-    }
-    this.mapTitleToSlug = mapping
-    return mapping
-  }
-
-  private async formatLinks(content: string) {
-    const mapTitleToSlug = await this.getSlugByTitle()
-    const links = matchLinks(content)
-    return links
-      .map(link => {
-        const slug = mapTitleToSlug[link.title]
-
-        if (!slug) return null
-
-        return { ...link, slug }
-      })
-      .filter((i): i is { title: string; text: string; slug: string } => !!i)
+  async getTopic(key: string) {
+    return (await snapshot()).topics.get(key)
   }
 }

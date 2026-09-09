@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Prose } from '@/components/Prose'
 import { NoteService } from '@/lib/note-service'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NotesPage() {
   const notes = await NoteService.instance.listNotes()
 

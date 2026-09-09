@@ -2,8 +2,28 @@ import { MarkNote } from '../../_components/MarkNote'
 import { ScrollContainer, StickyNote } from '@/components/StackedNotes'
 import { NotesProvider } from '../../_store'
 import { Backlinks } from '../../_components/Backlinks'
-import { isContentNote } from '../../_helper/note'
 import { NoteService } from '@/lib/note-service'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { topicKey } from '@/lib/documents'
+import { settings } from '@/lib/atproto'
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const note = await NoteService.instance.getNoteBySlug((await params).slug)
+  return note
+    ? {
+        title: note.title,
+        description: note.description,
+        alternates: {
+          canonical: `${settings().origin}/notes/${encodeURIComponent(note.slug)}`
+        }
+      }
+    : {}
+}
 
 export default async function NotePage({
   params,
@@ -16,45 +36,44 @@ export default async function NotePage({
   const { note: leafNotes = [] } = await searchParams
 
   const noteService = NoteService.instance
+  const root = await noteService.getNoteBySlug(rootNote)
+  if (!root) notFound()
 
   const loadedEntries = await Promise.all(
-    [rootNote].concat(leafNotes).map(async slug => {
+    [...new Set([rootNote].concat(leafNotes))].slice(0, 12).map(async slug => {
       const entry = await noteService.getNoteBySlug(slug)
       if (!entry) return null
-
-      return {
-        slug,
-        ...entry
-      }
+      return entry
     })
   )
 
   const entries = loadedEntries.filter((i): i is NonNullable<typeof i> => !!i)
-  const [root] = entries
-
-  const slugByTitle = await noteService.getSlugByTitle()
-
-  if (!root || !entries.length) {
-    throw new Error('404')
-  }
 
   return (
     <NotesProvider
       root={root.slug}
       notes={entries.map(i => i?.slug).filter((i): i is string => !!i)}
     >
+      <link rel='site.standard.document' href={root.uri} />
       <ScrollContainer panes={entries.length}>
         {entries.map(
           (entry, index) =>
             entry && (
-              <StickyNote key={entry.title} title={entry.title} index={index}>
-                {isContentNote(entry) ? (
-                  <MarkNote
-                    slug={entry.slug}
-                    entry={entry}
-                    slugByTitle={slugByTitle}
-                  />
-                ) : null}
+              <StickyNote key={entry.uri} title={entry.title} index={index}>
+                <MarkNote slug={entry.slug} entry={entry} />
+                <nav
+                  aria-label='Topics'
+                  className='flex flex-wrap gap-3 text-sm'
+                >
+                  {entry.tags.map(tag => (
+                    <Link
+                      key={tag}
+                      href={`/topics/${encodeURIComponent(topicKey(tag))}`}
+                    >
+                      #{tag}
+                    </Link>
+                  ))}
+                </nav>
                 <Backlinks
                   backlinks={entry.backlinks}
                   currentNote={entry.slug}

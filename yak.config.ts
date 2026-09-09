@@ -1,8 +1,4 @@
 type Config = {
-  repo: {
-    owner: string
-    name: string
-  }
   analytics?: {
     umami?: {
       host: string
@@ -14,10 +10,6 @@ type Config = {
 }
 
 const config: Config = {
-  repo: {
-    owner: 'hopsken',
-    name: 'notes'
-  },
   analytics: {
     umami:
       process.env.NEXT_PUBLIC_UMAMI_HOST &&
@@ -34,8 +26,8 @@ const config: Config = {
       text: '~ls'
     },
     {
-      href: '/notes/daily',
-      text: 'Daily'
+      href: '/admin',
+      text: 'Write'
     }
   ]
 }
