@@ -62,13 +62,14 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
   const slug = `browser-${Date.now()}`
   await page.getByLabel('Title', { exact: true }).fill('Browser integration')
   await page.getByLabel('Path: /notes/').fill(slug)
-  await page.getByLabel('Tags (comma separated)').fill('React')
-  await body.fill('Browser draft survives a reload. ')
+  await body.fill('Browser draft survives a reload. #React #中文 #react ')
+  await expect(page.getByLabel(/Tags/i)).toHaveCount(0)
   await page.getByLabel('Insert article link').selectOption('hello')
   await page.reload()
   await expect(body).toBeVisible()
   await page.getByRole('button', { name: 'Restore draft' }).click()
   await expect(body).toContainText('Browser draft survives a reload.')
+  await expect(body).toContainText('#React #中文 #react')
   await expect(page.getByLabel('Title', { exact: true })).toHaveValue(
     'Browser integration'
   )

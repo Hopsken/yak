@@ -8,10 +8,6 @@ export const documentInput = z.object({
   title: z.string().trim().min(1).max(500),
   slug: z.string().regex(/^[\p{L}\p{N}][\p{L}\p{N}_-]*$/u),
   description: z.string().max(3000).default(''),
-  tags: z
-    .array(z.string().trim().max(128))
-    .max(100)
-    .transform(tags => tags.filter(Boolean)),
   markdown: z.string().max(900_000),
   rkey: z
     .string()
@@ -38,6 +34,15 @@ export type Note = NoteMeta & {
 export function markdownInfo(markdown: string) {
   const tree = unified().use(remarkParse).parse(markdown)
   const links: string[] = []
+  const tags = new Map<string, string>()
+  visit(tree, 'text', node => {
+    for (const match of node.value.matchAll(
+      /(?:^|[\s([{"'，。！？；：、（【])#([\p{L}\p{N}_][\p{L}\p{M}\p{N}_-]*)/gu
+    )) {
+      const tag = match[1]
+      if (!tags.has(topicKey(tag))) tags.set(topicKey(tag), tag)
+    }
+  })
   const definitions = new Map<string, string>()
   visit(tree, 'definition', node => {
     definitions.set(node.identifier, node.url)
@@ -49,7 +54,11 @@ export function markdownInfo(markdown: string) {
     const url = definitions.get(node.identifier)
     if (url) links.push(url)
   })
-  return { links, text: tree.children.map(node => toString(node)).join('\n\n') }
+  return {
+    links,
+    tags: [...tags.values()],
+    text: tree.children.map(node => toString(node)).join('\n\n')
+  }
 }
 
 export const topicKey = (tag: string) =>

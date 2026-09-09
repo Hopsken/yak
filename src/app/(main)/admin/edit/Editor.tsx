@@ -173,27 +173,15 @@ export function Editor({
             className='mt-1 block w-full rounded border bg-transparent p-2 text-xl'
           />
         </label>
-        <div className='grid gap-4 md:grid-cols-2'>
-          <label>
-            Path: /notes/
-            <input
-              value={draft.slug}
-              readOnly={!!draft.rkey}
-              onChange={e => change({ slug: e.target.value })}
-              className='mt-1 block w-full rounded border bg-transparent p-2'
-            />
-          </label>
-          <label>
-            Tags (comma separated)
-            <input
-              value={draft.tags.join(', ')}
-              onChange={e =>
-                change({ tags: e.target.value.split(',').map(s => s.trim()) })
-              }
-              className='mt-1 block w-full rounded border bg-transparent p-2'
-            />
-          </label>
-        </div>
+        <label className='block'>
+          Path: /notes/
+          <input
+            value={draft.slug}
+            readOnly={!!draft.rkey}
+            onChange={e => change({ slug: e.target.value })}
+            className='mt-1 block w-full rounded border bg-transparent p-2'
+          />
+        </label>
         <label className='block'>
           Description
           <textarea

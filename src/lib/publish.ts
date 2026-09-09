@@ -15,6 +15,9 @@ export async function publish(
   config: { did: Did; origin: string }
 ) {
   const data = documentInput.parse(input)
+  const info = markdownInfo(data.markdown)
+  if (info.tags.length > 100 || info.tags.some(tag => tag.length > 128))
+    throw new Error('Use at most 100 tags, each at most 128 characters')
   if (!!data.rkey !== !!data.cid)
     throw new Error('Record key and revision CID must be supplied together')
   let publication = await findPublication(client, config)
@@ -105,11 +108,11 @@ export async function publish(
     title: data.title,
     path,
     description: data.description,
-    tags: [...new Set(data.tags)],
+    tags: info.tags,
     publishedAt:
       typeof previous.publishedAt === 'string' ? previous.publishedAt : now,
     updatedAt: now,
-    textContent: markdownInfo(data.markdown).text.slice(0, 30_000),
+    textContent: info.text.slice(0, 30_000),
     content: {
       $type: 'at.markpub.markdown',
       flavor: 'commonmark',

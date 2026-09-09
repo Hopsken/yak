@@ -28,12 +28,11 @@ export default async function EditPage({
               title: note.title,
               slug: note.slug,
               description: note.description,
-              tags: note.tags,
               markdown: note.markdown,
               rkey: note.rkey,
               cid: note.cid
             }
-          : { title: '', slug: '', description: '', tags: [], markdown: '' }
+          : { title: '', slug: '', description: '', markdown: '' }
       }
       owner={settings().did}
       origin={settings().origin}

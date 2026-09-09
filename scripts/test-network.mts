@@ -47,8 +47,7 @@ const input = {
   title: 'Integration article',
   slug,
   description: 'PDS round trip',
-  tags: ['React'],
-  markdown: 'A **real** article.\n\n[Hello](/notes/hello)'
+  markdown: 'A **real** article. #React\n\n[Hello](/notes/hello)'
 }
 async function write(data: unknown) {
   const response = await fetch(`${origin}/api/documents`, {
@@ -70,6 +69,7 @@ const saved = await fetch(
 assert.equal(saved.value.content.$type, 'at.markpub.markdown')
 assert.equal(saved.value.content.flavor, 'commonmark')
 assert.equal(saved.value.content.text.markdown, input.markdown)
+assert.deepEqual(saved.value.tags, ['React'])
 assert.equal(saved.value.path, `/notes/${slug}`)
 assert.ok(
   isTid(saved.value.site.split('/').at(-1)),
@@ -92,8 +92,7 @@ const changed = {
   ...input,
   rkey: created.data.rkey,
   cid: created.data.cid,
-  markdown: 'Updated article without links.',
-  tags: []
+  markdown: 'Updated article without links.'
 }
 const updated = await write(changed)
 assert.equal(updated.status, 200, JSON.stringify(updated.data))

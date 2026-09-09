@@ -17,6 +17,31 @@ function note(slug: string, markdown = '', tags: string[] = []): Note {
   }
 }
 describe('derived links', () => {
+  it('extracts Unicode hashtags in order and deduplicates topic keys', () => {
+    expect(
+      markdownInfo(
+        '#React #中文，#web-dev (#under_score) #react #Ｒｅａｃｔ\n\n**#café**'
+      ).tags
+    ).toEqual(['React', '中文', 'web-dev', 'under_score', 'café'])
+  })
+  it('excludes heading markers, code, image metadata and URL fragments', () => {
+    expect(
+      markdownInfo(
+        [
+          '# Heading',
+          '## Another heading',
+          '`#inline`',
+          '```js\n#code\n```',
+          '    #indented',
+          '[link](https://example.test/#fragment)',
+          '[reference][ref]\n\n[ref]: /#definition',
+          '![#alt](/#image)',
+          'https://example.test/#plain word#embedded ##invalid',
+          '> Visible #yes'
+        ].join('\n\n')
+      ).tags
+    ).toEqual(['yes'])
+  })
   it('indexes links once, excludes code and external sites, supports references', () => {
     const graph = buildGraph(
       [

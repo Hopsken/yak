@@ -12,7 +12,6 @@ const config = {
 const draft = {
   title: 'Test article',
   slug: 'hello-world',
-  tags: [],
   markdown: '**Hello**'
 }
 
@@ -38,6 +37,7 @@ describe('portable publishing', () => {
             value: {
               site: config.publication,
               path: `/notes/${encodeURIComponent(slug)}`,
+              tags: ['Old'],
               content: { $type: 'at.markpub.markdown' }
             }
           })
@@ -64,6 +64,7 @@ describe('portable publishing', () => {
       record: {
         site: config.publication,
         path: `/notes/${encodeURIComponent(slug)}`,
+        tags: [],
         textContent: 'Hello',
         content: {
           $type: 'at.markpub.markdown',
@@ -120,7 +121,15 @@ describe('portable publishing', () => {
         })
       }
     })
-    const result = await publish(client, draft, config)
+    const result = await publish(
+      client,
+      {
+        ...draft,
+        tags: ['Ignored'],
+        markdown: '#中文 #React #react `#code`'
+      },
+      config
+    )
     expect(result.rkey).toBe('3mf6xbr3f2223')
     expect(writes).toHaveLength(2)
     expect(writes[0]).toMatchObject({
@@ -131,7 +140,7 @@ describe('portable publishing', () => {
     expect(writes[1]).not.toHaveProperty('rkey')
     expect(writes[1]).toMatchObject({
       collection: 'site.standard.document',
-      record: { site: uri }
+      record: { site: uri, tags: ['中文', 'React'] }
     })
   })
 
