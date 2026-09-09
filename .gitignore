@@ -31,7 +31,8 @@ yarn-error.log*
 .env*.local
 .env.test-network
 /.yak/
-/.amp/
+/.amp/*
+!/.amp/services.yaml
 
 # vercel
 .vercel

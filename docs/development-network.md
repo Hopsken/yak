@@ -77,21 +77,33 @@ by the disposable PDS proxy, not by Yak's production session storage.
 
 ## Amp orbs
 
-Run the local test network and app as supervised services:
+Start the saved portal and disposable PDS services from the repository root:
 
 ```sh
-amp orb service start yak-network --command 'pnpm dev:network'
-# Wait for its ready log, then merge .env.test-network as above.
-amp orb service start yak \
-  --command 'NODE_EXTRA_CA_CERTS=.yak/tls/pds-cert.pem pnpm dev --hostname 0.0.0.0' \
-  --port 3000
+amp orb services ensure
 ```
 
-Preview and tests use separate app processes and configuration. Keep the test
-app's `YAK_ORIGIN` at `http://127.0.0.1:3000`. For a portal preview, use a separate
-checkout with its own development env file and port, start its supervised service
-with `--portal`, then set its `YAK_ORIGIN` to the returned portal origin and
-restart that service. Do not change the test app's configuration for preview.
+Open the printed portal URL, then select **Write → Development login → New
+article**. `.amp/services.yaml` declares both services. No generated portal
+hostname or test credential is committed. The preview takes `YAK_ORIGIN` from
+Amp's `PUBLIC_URL` and waits until the seeded PDS record is readable.
+
+Preview and tests use separate app processes and configuration. The preview
+script copies the current source into a temporary directory outside the repo,
+shares installed dependencies, and keeps build output away from lint and tests.
+After source changes, run `amp orb service restart yak-preview` to refresh the
+copy. If the network restarts, restart the preview and log in again because its
+test accounts and secrets change.
+
+For network/browser tests, keep a separate app at `http://127.0.0.1:3000`:
+
+```sh
+amp orb service start yak --port 3000 --command \
+  'set -a; . ./.env.test-network; set +a; pnpm dev --hostname 0.0.0.0'
+```
+
+Local OAuth browser tests also need the hosts-file entry described above.
+The portal's Development login does not use OAuth or require that entry.
 
 Each app accepts mutating requests only from its own `YAK_ORIGIN`. Next.js also
 uses that hostname for its development-server origin allowlist; this does not

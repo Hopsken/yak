@@ -1,0 +1,12 @@
+services:
+  yak-network:
+    command: pnpm dev:network
+    port: 2582
+    health: /xrpc/com.atproto.server.describeServer
+  yak-preview:
+    command: bash scripts/orb-preview.sh
+    port: 3001
+    health: /admin
+    portal:
+      title: Yak editor preview
+      description: 'Disposable local PDS. Select Write → Development login → New article.'
