@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This app needs no authentication or backing-service repair on resume.
-# Dependencies and local configuration are retained in the orb snapshot.
-echo 'Orb ready; no resume work required'
+# Dependencies are retained. Restarting the disposable network creates new
+# accounts; merge .env.test-network and restart Yak as documented.
+echo 'Orb ready; see docs/development-network.md for local PDS startup'
