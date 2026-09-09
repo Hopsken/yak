@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { appSession, devLoginEnabled } from '@/lib/auth'
 import { settings } from '@/lib/atproto'
 import { NoteService } from '@/lib/note-service'
@@ -11,13 +12,13 @@ export default async function AdminPage() {
     (session.mode === 'oauth' || (session.mode === 'dev' && devLoginEnabled()))
   if (!owner)
     return (
-      <main className='mx-auto w-full max-w-xl space-y-6 p-8'>
-        <h1 className='text-3xl font-bold'>Write on Yak</h1>
-        <p>
-          Only the configured owner can publish. Drafts stay in your browser.
-        </p>
-        <form action='/api/auth/login' method='post'>
-          <button className='rounded bg-zinc-900 px-4 py-2 text-white dark:bg-zinc-700'>
+      <main className='flex w-full flex-1 flex-col items-center justify-center gap-3 p-8'>
+        <form
+          action='/api/auth/login'
+          method='post'
+          className='w-full max-w-60'
+        >
+          <button className='w-full rounded border border-transparent bg-zinc-900 px-4 py-2 text-white dark:bg-zinc-700'>
             Log in with ATProto
           </button>
         </form>
@@ -25,10 +26,9 @@ export default async function AdminPage() {
           <form
             action='/api/auth/dev'
             method='post'
-            className='space-y-3 border-t pt-6'
+            className='w-full max-w-60'
           >
-            <p>Isolated development network</p>
-            <button className='rounded border px-4 py-2'>
+            <button className='w-full rounded border px-4 py-2'>
               Development login
             </button>
           </form>
@@ -39,17 +39,17 @@ export default async function AdminPage() {
   return (
     <main className='mx-auto w-full max-w-3xl space-y-6 p-8'>
       <div className='flex items-center justify-between'>
-        <h1 className='text-3xl font-bold'>Your articles</h1>
-        <form action='/api/auth/logout' method='post'>
-          <button className='underline'>Log out</button>
-        </form>
+        <h1 className='text-3xl font-bold'>Articles</h1>
+        <Link
+          href='/admin/edit'
+          aria-label='Write a new article'
+          title='New article'
+          className='inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-2 text-sm leading-4 font-medium text-white hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-zinc-700 dark:hover:bg-zinc-600'
+        >
+          <Pencil aria-hidden='true' className='size-4' />
+          <span>Write</span>
+        </Link>
       </div>
-      <Link
-        href='/admin/edit'
-        className='inline-block rounded bg-zinc-900 px-4 py-2 text-white dark:bg-zinc-700'
-      >
-        New article
-      </Link>
       <ul className='divide-y'>
         {notes.map(({ entry }) => (
           <li key={entry.uri} className='flex justify-between gap-4 py-4'>

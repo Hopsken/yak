@@ -19,13 +19,7 @@ const config: Config = {
             websiteId: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID
           }
         : undefined
-  },
-  links: [
-    {
-      href: '/admin',
-      text: 'Write'
-    }
-  ]
+  }
 }
 
 export default config

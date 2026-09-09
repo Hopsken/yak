@@ -10,9 +10,11 @@ identity resolution, OAuth, and Standard.site schemas.
 - `site.standard.document` stores article metadata, tags, and plaintext.
 - `at.markpub.markdown` stores CommonMark. Bodies over 50 KB use a Markdown
   blob (maximum 1,000,000 bytes), with an inline preview.
-- Tiptap provides basic rich-text editing, Markdown import/export, and preview.
-- Private drafts remain in browser storage. Use **Restore draft** after reopening;
-  export a backup before clearing browser data. Drafts do not sync across devices.
+- The editor has a title, a Tiptap rich-text body, and a Publish button.
+  Tiptap's Markdown plugin loads and saves CommonMark; Markdown shortcuts
+  become formatting while you type.
+- Private drafts remain in browser storage and restore automatically on reopening.
+  Copy a backup before clearing browser data. Drafts do not sync across devices.
 - Article links and tags form a derived, rebuildable backlink/topic index.
 - Desktop links open stacked notes; URLs preserve the stack across reload/history.
 - Images use Markdown URLs. Portable PDS body-image attachments are not implemented.
@@ -70,7 +72,7 @@ pnpm test:browser
 
 `test:network` checks auth boundaries, PDS round trips, SSR, backlinks, conflicts,
 and large body blobs. `test:browser` completes real local HTTPS PDS OAuth,
-Tiptap editing, draft restore, publishing, stacked links, and browser history.
+Markdown editing, automatic draft restore, publishing, stacked links, and browser history.
 These scripts publish only to the disposable local network.
 
 ## Production configuration

@@ -83,8 +83,8 @@ Start the saved portal and disposable PDS services from the repository root:
 amp orb services ensure
 ```
 
-Open the printed portal URL, then select **Write → Development login → New
-article**. `.amp/services.yaml` declares both services. No generated portal
+Open `/admin` at the printed portal URL, then select **Development login →
+Write**. `.amp/services.yaml` declares both services. No generated portal
 hostname or test credential is committed. The preview takes `YAK_ORIGIN` from
 Amp's `PUBLIC_URL` and waits until the seeded PDS record is readable.
 

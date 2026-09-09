@@ -9,4 +9,4 @@ services:
     health: /admin
     portal:
       title: Yak editor preview
-      description: 'Disposable local PDS. Select Write → Development login → New article.'
+      description: 'Disposable local PDS. Open /admin, then select Development login → Write.'

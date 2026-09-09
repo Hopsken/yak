@@ -4,6 +4,8 @@ import { settings } from '@/lib/atproto'
 import { NoteService } from '@/lib/note-service'
 import { Editor } from './Editor'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditPage({
   searchParams
 }: {
@@ -18,7 +20,6 @@ export default async function EditPage({
   const { rkey } = await searchParams
   const note = rkey ? await NoteService.instance.getNoteBySlug(rkey) : null
   if (rkey && (!note || !note.supported)) notFound()
-  const notes = await NoteService.instance.listNotes()
   return (
     <Editor
       key={note?.uri ?? 'new'}
@@ -34,11 +35,6 @@ export default async function EditPage({
           : { title: '', description: '', markdown: '' }
       }
       owner={settings().did}
-      origin={settings().origin}
-      notes={notes.map(({ entry }) => ({
-        title: entry.title,
-        slug: entry.slug
-      }))}
     />
   )
 }
