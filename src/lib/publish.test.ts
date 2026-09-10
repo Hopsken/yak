@@ -16,6 +16,51 @@ const draft = {
 }
 
 describe('portable publishing', () => {
+  it.each(['a'.repeat(50_000), '中'.repeat(16_666) + 'ab'])(
+    'stores a 50,000-byte body inline',
+    async markdown => {
+      let text: unknown
+      const client = new Client({
+        handler: async (path, init) => {
+          if (path.includes('collection=site.standard.publication'))
+            return Response.json({
+              records: [
+                { uri: config.publication, value: { url: config.origin } }
+              ]
+            })
+          if (path === '/xrpc/com.atproto.repo.createRecord') {
+            const input = JSON.parse(init.body as string)
+            text = input.record.content.text
+            return Response.json({
+              uri: `at://${config.did}/site.standard.document/${input.rkey}`,
+              cid: 'saved-cid'
+            })
+          }
+          throw new Error(`Unexpected request: ${path}`)
+        }
+      })
+      await publish(client, { ...draft, markdown }, config)
+      expect(text).toEqual({ $type: 'at.markpub.text', markdown })
+    }
+  )
+
+  it.each(['a'.repeat(50_001), '中'.repeat(16_667)])(
+    'rejects a 50,001-byte body before any PDS request',
+    async markdown => {
+      let calls = 0
+      const client = new Client({
+        handler: async () => {
+          calls++
+          throw new Error('Unexpected PDS request')
+        }
+      })
+      await expect(
+        publish(client, { ...draft, markdown }, config)
+      ).rejects.toThrow('Markdown exceeds the 50,000-byte limit')
+      expect(calls).toBe(0)
+    }
+  )
+
   it.each(['3mf6xbr3f2222', '3mf6xbr3f2223'])(
     'preserves the existing record key %s',
     async rkey => {

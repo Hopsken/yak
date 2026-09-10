@@ -63,18 +63,6 @@ export async function publish(
     )
       throw new Error('This article uses an unsupported format')
   }
-  const bytes = new TextEncoder().encode(data.markdown)
-  if (bytes.length > 1_000_000)
-    throw new Error('Markdown exceeds the 1 MB limit')
-  const blob =
-    bytes.length > 50_000
-      ? await ok(
-          client.post('com.atproto.repo.uploadBlob', {
-            input: bytes,
-            headers: { 'Content-Type': 'text/markdown' }
-          })
-        )
-      : undefined
   const now = new Date().toISOString()
   const record = {
     ...previous,
@@ -93,8 +81,7 @@ export async function publish(
       flavor: 'commonmark',
       text: {
         $type: 'at.markpub.text',
-        markdown: blob ? data.markdown.slice(0, 1000) : data.markdown,
-        ...(blob ? { textBlob: blob.blob } : {})
+        markdown: data.markdown
       }
     }
   }

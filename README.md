@@ -8,8 +8,8 @@ identity resolution, OAuth, and Standard.site schemas.
 
 - `site.standard.publication` identifies your blog and its canonical domain.
 - `site.standard.document` stores article metadata, tags, and plaintext.
-- `at.markpub.markdown` stores CommonMark. Bodies over 50 KB use a Markdown
-  blob (maximum 1,000,000 bytes), with an inline preview.
+- `at.markpub.markdown` stores CommonMark inline, up to 50,000 UTF-8 bytes.
+  Larger bodies are rejected. Markdown blobs are not supported.
 - The editor has a title, a Tiptap rich-text body, and a Publish button.
   Tiptap's Markdown plugin loads and saves CommonMark; Markdown shortcuts
   become formatting while you type.
@@ -71,7 +71,7 @@ pnpm test:browser
 ```
 
 `test:network` checks auth boundaries, PDS round trips, SSR, backlinks, conflicts,
-and large body blobs. `test:browser` completes real local HTTPS PDS OAuth,
+and oversized body rejection. `test:browser` completes real local HTTPS PDS OAuth,
 Markdown editing, automatic draft restore, publishing, stacked links, and browser history.
 These scripts publish only to the disposable local network.
 

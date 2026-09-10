@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
-import { listRecords, publicClient, readTextBlob, settings } from './atproto'
+import { listRecords, publicClient, settings } from './atproto'
 import { findPublication } from './publication'
 import { buildGraph, type Note } from './documents'
 import { z } from 'zod'
@@ -20,8 +20,7 @@ const recordSchema = z.object({
 const markpubSchema = z.object({
   $type: z.literal('at.markpub.markdown'),
   text: z.object({
-    markdown: z.string(),
-    textBlob: z.object({ ref: z.object({ $link: z.string() }) }).optional()
+    markdown: z.string()
   })
 })
 
@@ -41,9 +40,7 @@ const snapshot = cache(async () => {
         if (doc.path !== `/r/${slug}`) continue
         const body = markpubSchema.safeParse(doc.content)
         const markdown = body.success
-          ? body.data.text.textBlob
-            ? await readTextBlob(body.data.text.textBlob.ref.$link)
-            : body.data.text.markdown
+          ? body.data.text.markdown
           : (doc.textContent ?? '')
         result.push({
           title: doc.title,

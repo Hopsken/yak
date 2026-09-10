@@ -63,8 +63,7 @@ export async function oauthClient(storage?: OAuthStorage) {
         scope.repo({
           collection: ['site.standard.document', 'site.standard.publication'],
           action: ['create', 'update']
-        }),
-        scope.blob({ accept: ['text/markdown'] })
+        })
       ]
     },
     stores: storage ?? (await oauthStorage()),

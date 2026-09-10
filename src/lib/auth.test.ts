@@ -80,6 +80,9 @@ it('uses public OAuth metadata on production HTTPS without a client key', async 
   expect(metadata.jwks).toBeUndefined()
   expect(metadata.jwks_uri).toBeUndefined()
   expect(metadata.dpop_bound_access_tokens).toBe(true)
+  expect(metadata.scope).toBe(
+    'atproto repo?collection=site.standard.document&collection=site.standard.publication&action=create&action=update'
+  )
   expect(metadata.redirect_uris).toEqual([
     'https://notes.example.com/api/auth/callback'
   ])

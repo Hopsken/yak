@@ -70,15 +70,3 @@ export async function listRecords(collection: string) {
   } while (cursor)
   return records
 }
-
-export async function readTextBlob(cid: string) {
-  const url = new URL('/xrpc/com.atproto.sync.getBlob', await pdsUrl())
-  url.searchParams.set('did', settings().did)
-  url.searchParams.set('cid', cid)
-  const response = await fetch(url, { signal: AbortSignal.timeout(15000) })
-  if (!response.ok) throw new Error('Unable to retrieve article body')
-  const text = await response.text()
-  if (new TextEncoder().encode(text).byteLength > 1_000_000)
-    throw new Error('Article body exceeds Markpub limit')
-  return text
-}

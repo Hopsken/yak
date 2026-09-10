@@ -7,7 +7,12 @@ import { toString } from 'mdast-util-to-string'
 export const documentInput = z.object({
   title: z.string().trim().min(1).max(500),
   description: z.string().max(3000).default(''),
-  markdown: z.string().max(900_000),
+  markdown: z
+    .string()
+    .refine(
+      value => new TextEncoder().encode(value).byteLength <= 50_000,
+      'Markdown exceeds the 50,000-byte limit'
+    ),
   rkey: z
     .string()
     .regex(/^[a-zA-Z0-9._~:-]+$/)

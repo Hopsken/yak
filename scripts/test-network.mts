@@ -116,17 +116,16 @@ assert.match(stale.data.error, /changed/)
 const large = await write({
   ...changed,
   cid: updated.data.cid,
-  markdown: 'Large body.\n\n'.repeat(6000)
+  markdown: '中'.repeat(16_667)
 })
-assert.equal(large.status, 200, JSON.stringify(large.data))
-const blobRecord = await fetch(
+assert.equal(large.status, 400, JSON.stringify(large.data))
+assert.match(large.data.error, /50,000-byte limit/)
+const unchangedRecord = await fetch(
   `${env.YAK_PDS_URL}/xrpc/com.atproto.repo.getRecord?repo=${env.YAK_OWNER_DID}&collection=site.standard.document&rkey=${created.data.rkey}`
 ).then(r => r.json())
-assert.ok(blobRecord.value.content.text.textBlob)
-assert.match(
-  await fetch(`${origin}/r/${created.data.rkey}`).then(r => r.text()),
-  /Large body/
-)
+assert.equal(unchangedRecord.cid, updated.data.cid)
+assert.equal(unchangedRecord.value.content.text.markdown, changed.markdown)
+assert.equal(unchangedRecord.value.content.text.textBlob, undefined)
 assert.equal(
   await fetch(`${origin}/.well-known/site.standard.publication`).then(r =>
     r.text()
@@ -145,5 +144,5 @@ const forged = await fetch(`${origin}/api/documents`, {
 })
 assert.equal(forged.status, 400)
 console.log(
-  'PASS: keyless local dev login, origin checks, forged/absent sessions, distinct TID creates, /r SSR, topics/backlinks, CID/path preservation, stale CID rejection, large body blob, publication verification, no /notes compatibility'
+  'PASS: keyless local dev login, origin checks, forged/absent sessions, distinct TID creates, /r SSR, topics/backlinks, CID/path preservation, stale CID rejection, oversized body rejection, publication verification, no /notes compatibility'
 )
