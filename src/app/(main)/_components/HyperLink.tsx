@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import React, { PropsWithChildren, useCallback, useMemo } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useScrollTo } from '@/components/StackedNotes/context'
 import { useNotes } from '../_store'
 import { useIsMobile } from '@/hooks/useMediaQuery'
@@ -15,7 +15,6 @@ type Props = PropsWithChildren<{
 }>
 
 export function HyperLink({ from, href, children }: Props) {
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
   const scrollTo = useScrollTo()
@@ -60,17 +59,14 @@ export function HyperLink({ from, href, children }: Props) {
       }
 
       const params = new URLSearchParams(searchParams)
-      // reset all
       params.delete('note')
 
-      // if from root, direct append to params
       const fromIndex = notes.indexOf(from)
-      for (let i = 1; i <= fromIndex; i++) {
-        params.append('note', notes[i])
-      }
-      params.append('note', target)
+      const path = [...notes.slice(0, fromIndex + 1), target]
+        .map(encodeURIComponent)
+        .join('/')
 
-      router.push(pathname + '?' + params.toString())
+      router.push(`/r/${path}${params.size ? `?${params}` : ''}`)
       return
     },
     [
@@ -79,7 +75,6 @@ export function HyperLink({ from, href, children }: Props) {
       isMobile,
       isNoteLink,
       notes,
-      pathname,
       router,
       scrollTo,
       searchParams,

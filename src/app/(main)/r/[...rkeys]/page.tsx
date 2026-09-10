@@ -11,9 +11,9 @@ import { settings } from '@/lib/atproto'
 export async function generateMetadata({
   params
 }: {
-  params: Promise<{ rkey: string }>
+  params: Promise<{ rkeys: string[] }>
 }) {
-  const note = await NoteService.instance.getNoteBySlug((await params).rkey)
+  const note = await NoteService.instance.getNoteBySlug((await params).rkeys[0])
   return note
     ? {
         title: note.title,
@@ -26,21 +26,19 @@ export async function generateMetadata({
 }
 
 export default async function NotePage({
-  params,
-  searchParams
+  params
 }: {
-  params: Promise<{ rkey: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  params: Promise<{ rkeys: string[] }>
 }) {
-  const { rkey: rootNote } = await params
-  const { note: leafNotes = [] } = await searchParams
+  const { rkeys } = await params
+  const [rootNote] = rkeys
 
   const noteService = NoteService.instance
   const root = await noteService.getNoteBySlug(rootNote)
   if (!root) notFound()
 
   const loadedEntries = await Promise.all(
-    [...new Set([rootNote].concat(leafNotes))].slice(0, 12).map(async slug => {
+    [...new Set(rkeys)].slice(0, 12).map(async slug => {
       const entry = await noteService.getNoteBySlug(slug)
       if (!entry) return null
       return entry

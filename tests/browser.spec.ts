@@ -441,14 +441,14 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     page.getByText('Browser draft survives a reload.', { exact: false })
   ).toBeVisible()
   await page.getByRole('link', { name: 'Hello from Yak', exact: true }).click()
-  await expect(page).toHaveURL(`${origin}/r/${rkey}?note=${env.YAK_SEED_RKEY}`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}/${env.YAK_SEED_RKEY}`)
   await expect(
     page.getByText('Linked to this note', { exact: true })
   ).toBeVisible()
   await page.goBack()
   await expect(page).toHaveURL(`${origin}/r/${rkey}`)
   await page.goForward()
-  await expect(page).toHaveURL(`${origin}/r/${rkey}?note=${env.YAK_SEED_RKEY}`)
+  await expect(page).toHaveURL(`${origin}/r/${rkey}/${env.YAK_SEED_RKEY}`)
   await page.goto(`${origin}/admin`)
   await expect(
     page.getByRole('main').getByRole('button', { name: 'Log out' })
