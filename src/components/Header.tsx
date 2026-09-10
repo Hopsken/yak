@@ -1,7 +1,7 @@
 import { siteSettings } from '@/consts'
 import { appSession, devLoginEnabled } from '@/lib/auth'
 import { settings } from '@/lib/atproto'
-import { LogOut } from 'lucide-react'
+import { LogIn, LogOut } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import Link from 'next/link'
 import yak from '../../yak.config'
@@ -36,7 +36,7 @@ export async function Header() {
       </div>
 
       <div className='flex items-center gap-1'>
-        {owner && (
+        {owner ? (
           <form action='/api/auth/logout' method='post'>
             <button
               aria-label='Log out'
@@ -46,6 +46,15 @@ export async function Header() {
               <LogOut aria-hidden='true' className='size-4' />
             </button>
           </form>
+        ) : (
+          <Link
+            href='/admin'
+            aria-label='Sign in'
+            title='Sign in'
+            className='rounded p-2 text-zinc-600 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-800'
+          >
+            <LogIn aria-hidden='true' className='size-4' />
+          </Link>
         )}
         <ThemeToggle />
       </div>
