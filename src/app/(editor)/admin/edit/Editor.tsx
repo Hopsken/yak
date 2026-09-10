@@ -1,6 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore
+} from 'react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { Markdown } from '@tiptap/markdown'
@@ -11,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { Send } from 'lucide-react'
 import { HiOutlineArrowLeft } from 'react-icons/hi2'
 import { z } from 'zod'
+import { useDebounceCallback } from 'usehooks-ts'
 import { documentInput, type DocumentInput } from '@/lib/documents'
 
 export function Editor(props: { initial: DocumentInput; owner: string }) {
@@ -36,7 +43,7 @@ function DraftEditor({
       const saved = localStorage.getItem(key)
       if (saved) {
         const data = documentInput
-          .extend({ title: z.string() })
+          .extend({ title: z.string(), markdown: z.string() })
           .parse(JSON.parse(saved))
         if (data.rkey === initial.rkey) return data
       }
@@ -47,7 +54,19 @@ function DraftEditor({
   })
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
-  const dirty = useRef(false)
+  const pending = useRef<DocumentInput | null>(null)
+  const savePending = useCallback(() => {
+    if (!pending.current) return
+    try {
+      localStorage.setItem(key, JSON.stringify(pending.current))
+      pending.current = null
+    } catch {
+      setMessage(
+        'Unable to save this draft in your browser. Keep this page open until you publish.'
+      )
+    }
+  }, [key])
+  const debouncedSave = useDebounceCallback(savePending, 300)
   const title = useRef<HTMLTextAreaElement>(null)
   const editor = useEditor({
     immediatelyRender: false,
@@ -95,24 +114,33 @@ function DraftEditor({
   }, [draft.title])
 
   useEffect(() => {
+    const saveNow = () => {
+      debouncedSave.cancel()
+      savePending()
+    }
     const warn = (event: BeforeUnloadEvent) => {
-      if (dirty.current) event.preventDefault()
+      saveNow()
+      if (pending.current) event.preventDefault()
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') saveNow()
     }
     window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [])
+    window.addEventListener('pagehide', saveNow)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      window.removeEventListener('beforeunload', warn)
+      window.removeEventListener('pagehide', saveNow)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      saveNow()
+    }
+  }, [debouncedSave, savePending])
 
   function change(patch: Partial<DocumentInput>) {
-    dirty.current = true
-    const next = { ...draft, ...patch }
+    const next = { ...(pending.current ?? draft), ...patch }
     setDraft(next)
-    try {
-      localStorage.setItem(key, JSON.stringify(next))
-    } catch {
-      setMessage(
-        'Unable to save this draft in your browser. Keep this page open until you publish.'
-      )
-    }
+    pending.current = next
+    debouncedSave()
   }
 
   async function publish() {
@@ -128,7 +156,8 @@ function DraftEditor({
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error)
-      dirty.current = false
+      debouncedSave.cancel()
+      pending.current = null
       try {
         localStorage.removeItem(key)
       } catch {

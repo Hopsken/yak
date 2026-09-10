@@ -14,6 +14,11 @@ test('rich Markdown drafts restore, resize, and survive a rejected publish', asy
   page,
   context
 }) => {
+  const dialogs: string[] = []
+  page.on('dialog', async dialog => {
+    dialogs.push(dialog.type())
+    await dialog.accept()
+  })
   await context.addCookies([
     {
       name: 'yak-session',
@@ -111,6 +116,128 @@ test('rich Markdown drafts restore, resize, and survive a rejected publish', asy
   await expect(
     page.getByRole('heading', { name: 'Articles', exact: true })
   ).toBeVisible()
+  expect(dialogs).toEqual([])
+})
+
+test('long drafts restore and only unsaved edits require a leave confirmation', async ({
+  page,
+  context
+}) => {
+  await context.addCookies([
+    {
+      name: 'yak-session',
+      value: await sealData(
+        { did: env.YAK_OWNER_DID, mode: 'dev' },
+        { password: env.YAK_SESSION_SECRET!, ttl: 86400 }
+      ),
+      url: origin,
+      httpOnly: true,
+      sameSite: 'Lax'
+    }
+  ])
+  const key = `yak:draft:${env.YAK_OWNER_DID}:new`
+  await page.goto(`${origin}/admin`)
+  await page.evaluate(key => {
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        title: '  Unfinished title  ',
+        description: '',
+        markdown: 'Long draft survives ' + 'word '.repeat(180_001)
+      })
+    )
+  }, key)
+  await page.goto(`${origin}/admin/edit`)
+  const title = page.getByRole('textbox', { name: 'Title', exact: true })
+  const body = page.getByRole('textbox', { name: 'Article body' })
+  await expect(title).toHaveValue('  Unfinished title  ')
+  await expect(body).toContainText('Long draft survives')
+  await page.clock.install()
+  await page.clock.pauseAt(new Date(Date.now() + 1000))
+  await page.evaluate(() => {
+    const setItem = Storage.prototype.setItem
+    document.documentElement.dataset.draftWrites = '0'
+    Storage.prototype.setItem = function (...args) {
+      if (args[0].startsWith('yak:draft:')) {
+        const data = document.documentElement.dataset
+        data.draftWrites = String(Number(data.draftWrites) + 1)
+      }
+      return setItem.apply(this, args)
+    }
+  })
+  await body.fill('Short draft')
+  await page.clock.runFor(200)
+  await title.fill('Latest title')
+  await page.clock.runFor(299)
+  await expect(page.locator('html')).toHaveAttribute('data-draft-writes', '0')
+  await page.clock.runFor(1)
+  await expect(page.locator('html')).toHaveAttribute('data-draft-writes', '1')
+  expect(
+    await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), key)
+  ).toMatchObject({ title: 'Latest title', markdown: 'Short draft' })
+  await title.fill('Hidden page draft')
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'hidden'
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    Reflect.deleteProperty(document, 'visibilityState')
+  })
+  expect(
+    await page.evaluate(
+      key => JSON.parse(localStorage.getItem(key)!).title,
+      key
+    )
+  ).toBe('Hidden page draft')
+  await page.clock.runFor(300)
+  await expect(page.locator('html')).toHaveAttribute('data-draft-writes', '2')
+  await page.evaluate(() => {
+    const setItem = Storage.prototype.setItem
+    Storage.prototype.setItem = function (...args) {
+      if (args[1].includes('Cannot save'))
+        throw new DOMException('Storage full', 'QuotaExceededError')
+      return setItem.apply(this, args)
+    }
+  })
+  await title.fill('Cannot save')
+  await page.clock.runFor(300)
+  await expect(page.getByRole('status')).toContainText('Unable to save')
+  expect(
+    await page.evaluate(() =>
+      window.dispatchEvent(new Event('beforeunload', { cancelable: true }))
+    )
+  ).toBe(false)
+  await title.fill('Saved again')
+  expect(
+    await page.evaluate(() =>
+      window.dispatchEvent(new Event('beforeunload', { cancelable: true }))
+    )
+  ).toBe(true)
+  await page.reload()
+  await expect(title).toHaveValue('Saved again')
+  await expect(body).toHaveText('Short draft')
+  await title.fill('Saved on navigation')
+  await page.getByRole('link', { name: 'Back to articles' }).click()
+  await expect(page).toHaveURL(`${origin}/admin`)
+  expect(
+    await page.evaluate(
+      key => JSON.parse(localStorage.getItem(key)!).title,
+      key
+    )
+  ).toBe('Saved on navigation')
+  await page.goto(`${origin}/admin/edit`)
+  await expect(title).toHaveValue('Saved on navigation')
+  await page.route('**/api/documents', route =>
+    route.fulfill({
+      json: { rkey: env.YAK_SEED_RKEY, cid: 'published-revision' }
+    })
+  )
+  await title.fill('Publish before the save timer runs')
+  await page.getByRole('button', { name: 'Publish', exact: true }).click()
+  await page.waitForURL(`${origin}/admin/edit?rkey=${env.YAK_SEED_RKEY}`)
+  await page.clock.runFor(1000)
+  expect(await page.evaluate(key => localStorage.getItem(key), key)).toBeNull()
 })
 
 test('public OAuth, refresh, editor, stacked notes, logout and expired session', async ({
@@ -223,6 +350,8 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     `Read [Hello from Yak](${origin}/r/${env.YAK_SEED_RKEY}).`,
     ''
   ].join('\n')
+  await page.getByRole('link', { name: 'Back to articles' }).click()
+  await expect(page).toHaveURL(`${origin}/admin`)
   await page.evaluate(
     ({ owner, markdown }) => {
       localStorage.setItem(
@@ -236,7 +365,7 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
     },
     { owner: env.YAK_OWNER_DID!, markdown }
   )
-  await page.reload()
+  await page.goto(`${origin}/admin/edit`)
   await expect(body.locator('h2')).toHaveText('Keep Markdown and syntax')
   await expect(body.locator('strong')).toHaveText('Markdown')
   await expect(body.locator('em')).toHaveText('syntax')
@@ -250,6 +379,14 @@ test('public OAuth, refresh, editor, stacked notes, logout and expired session',
   await body.press('ControlOrMeta+End')
   await body.press('Enter')
   await body.pressSequentially('Edited in Tiptap.')
+  await expect
+    .poll(() =>
+      page.evaluate(
+        owner => localStorage.getItem(`yak:draft:${owner}:new`),
+        env.YAK_OWNER_DID!
+      )
+    )
+    .toContain('Edited in Tiptap.')
   const saved = await page.evaluate(
     owner =>
       JSON.parse(localStorage.getItem(`yak:draft:${owner}:new`)!)
