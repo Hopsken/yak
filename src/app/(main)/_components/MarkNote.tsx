@@ -1,4 +1,5 @@
 import Markdown from 'react-markdown'
+import { CopyCode } from './CopyCode'
 import { HyperLink } from './HyperLink'
 import type { Note } from '@/lib/documents'
 import { settings } from '@/lib/atproto'
@@ -8,6 +9,7 @@ export function MarkNote({ slug, entry }: { slug: string; entry: Note }) {
   return (
     <Markdown
       components={{
+        pre: ({ children }) => <CopyCode>{children}</CopyCode>,
         a: ({ href = '', children }) => {
           let target = href
           try {

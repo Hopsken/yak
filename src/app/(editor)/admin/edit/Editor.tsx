@@ -84,7 +84,7 @@ function DraftEditor({
         'aria-label': 'Article body',
         'aria-multiline': 'true',
         class:
-          'prose prose-zinc dark:prose-invert min-h-80 max-w-none break-words text-lg leading-8 outline-none [&>:first-child]:mt-0 [&_.is-editor-empty]:before:pointer-events-none [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:text-zinc-400 [&_.is-editor-empty]:before:content-[attr(data-placeholder)]'
+          'prose prose-zinc dark:prose-invert min-h-80 max-w-none break-words text-lg leading-8 outline-none [&>:first-child]:mt-0 [&_pre]:border [&_pre]:border-zinc-200 [&_pre]:bg-zinc-100 [&_pre]:text-zinc-900 dark:[&_pre]:border-transparent dark:[&_pre]:bg-black/50 dark:[&_pre]:text-zinc-300 [&_.is-editor-empty]:before:pointer-events-none [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:text-zinc-400 [&_.is-editor-empty]:before:content-[attr(data-placeholder)]'
       }
     },
     onUpdate: ({ editor }) => change({ markdown: editor.getMarkdown() })
